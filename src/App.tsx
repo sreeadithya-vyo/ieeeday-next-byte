@@ -12,7 +12,6 @@ import EventDetail from "./pages/EventDetail";
 import Registration from "./pages/Registration";
 import RegistrationWizard from "./pages/RegistrationWizard";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
-import Coordinators from "./pages/Coordinators";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/admin/Dashboard";
@@ -35,7 +34,6 @@ const App = () => (
               <Route path="/register" element={<Registration />} />
               <Route path="/register/wizard" element={<RegistrationWizard />} />
               <Route path="/register/confirmation" element={<RegistrationConfirmation />} />
-              <Route path="/coordinators" element={<Coordinators />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
               <Route 
