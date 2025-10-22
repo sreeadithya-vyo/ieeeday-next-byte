@@ -2,115 +2,92 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
-import EventDetail from "./pages/EventDetail";
 import Registration from "./pages/Registration";
-import Coordinators from "./pages/Coordinators";
+import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Contact from "./pages/Contact";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ProtectedRoute from "./components/ProtectedRoute";
-import DashboardLayout from "./components/dashboard/DashboardLayout";
-import EliteDashboard from "./pages/dashboard/EliteDashboard";
-import SuperDashboard from "./pages/dashboard/SuperDashboard";
-import ChapterDashboard from "./pages/dashboard/ChapterDashboard";
+import EliteMasterDashboard from "./pages/admin/elite/EliteMasterDashboard";
+import EliteEvents from "./pages/admin/elite/EliteEvents";
+import EliteRegistrations from "./pages/admin/elite/EliteRegistrations";
+import EliteChapterAdmins from "./pages/admin/elite/EliteChapterAdmins";
+import EliteSuperAdmins from "./pages/admin/elite/EliteSuperAdmins";
+import EliteRoles from "./pages/admin/elite/EliteRoles";
+import EliteAuditLogs from "./pages/admin/elite/EliteAuditLogs";
+import EliteReports from "./pages/admin/elite/EliteReports";
 
 const queryClient = new QueryClient();
 
-const RootRedirect = () => {
-  const { user, isAuthenticated } = useAuth();
-  
-  if (isAuthenticated && user) {
-    const routes: Record<string, string> = {
-      elite_master: '/dashboard/elite',
-      super_admin: '/dashboard/super',
-      aps_admin: '/dashboard/aps',
-      cs_admin: '/dashboard/cs',
-      pes_admin: '/dashboard/pes',
-      procomm_admin: '/dashboard/procomm',
-      sps_admin: '/dashboard/sps',
-    };
-    return <Navigate to={routes[user.role] || '/'} replace />;
-  }
-  
-  return <Home />;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            
-            {/* Public Website Routes */}
-            <Route element={<Layout><Routes><Route path="*" element={null} /></Routes></Layout>}>
-              <Route path="/" element={<RootRedirect />} />
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <AuthProvider>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Home />} />
               <Route path="/events" element={<Events />} />
-              <Route path="/events/:eventId" element={<EventDetail />} />
               <Route path="/register" element={<Registration />} />
-              <Route path="/coordinators" element={<Coordinators />} />
+              <Route path="/register/confirmation" element={<RegistrationConfirmation />} />
               <Route path="/contact" element={<Contact />} />
-            </Route>
-
-            {/* Dashboard Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route path="elite" element={
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Elite Master Routes */}
+              <Route path="/admin/elite" element={
                 <ProtectedRoute allowedRoles={['elite_master']}>
-                  <EliteDashboard />
+                  <EliteMasterDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="super" element={
-                <ProtectedRoute allowedRoles={['super_admin']}>
-                  <SuperDashboard />
+              <Route path="/admin/elite/events" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteEvents />
                 </ProtectedRoute>
               } />
-              <Route path="aps" element={
-                <ProtectedRoute allowedRoles={['aps_admin']}>
-                  <ChapterDashboard />
+              <Route path="/admin/elite/registrations" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteRegistrations />
                 </ProtectedRoute>
               } />
-              <Route path="cs" element={
-                <ProtectedRoute allowedRoles={['cs_admin']}>
-                  <ChapterDashboard />
+              <Route path="/admin/elite/chapter-admins" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteChapterAdmins />
                 </ProtectedRoute>
               } />
-              <Route path="pes" element={
-                <ProtectedRoute allowedRoles={['pes_admin']}>
-                  <ChapterDashboard />
+              <Route path="/admin/elite/super-admins" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteSuperAdmins />
                 </ProtectedRoute>
               } />
-              <Route path="procomm" element={
-                <ProtectedRoute allowedRoles={['procomm_admin']}>
-                  <ChapterDashboard />
+              <Route path="/admin/elite/roles" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteRoles />
                 </ProtectedRoute>
               } />
-              <Route path="sps" element={
-                <ProtectedRoute allowedRoles={['sps_admin']}>
-                  <ChapterDashboard />
+              <Route path="/admin/elite/audit" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteAuditLogs />
                 </ProtectedRoute>
               } />
-            </Route>
-
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              <Route path="/admin/elite/reports" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <EliteReports />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
