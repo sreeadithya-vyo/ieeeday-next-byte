@@ -1,10 +1,33 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Lightbulb, Users, Rocket, BookOpen, Trophy, Code } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Home = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkRoleAndRedirect = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data?.role === 'elite_master') {
+          navigate('/admin/elite', { replace: true });
+        }
+      }
+    };
+    
+    checkRoleAndRedirect();
+  }, [user, navigate]);
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
