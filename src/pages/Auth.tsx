@@ -17,6 +17,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginRole, setLoginRole] = useState<string>('');
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -129,6 +130,23 @@ export default function Auth() {
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-role">Select Role</Label>
+                  <Select value={loginRole} onValueChange={setLoginRole}>
+                    <SelectTrigger id="login-role" className="bg-background">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      <SelectItem value="APS Chair">APS Chair</SelectItem>
+                      <SelectItem value="SPS Chair">SPS Chair</SelectItem>
+                      <SelectItem value="PROCOM Chair">PROCOM Chair</SelectItem>
+                      <SelectItem value="CS Chair">CS Chair</SelectItem>
+                      <SelectItem value="PES Chair">PES Chair</SelectItem>
+                      <SelectItem value="Super Admin">Super Admin</SelectItem>
+                      <SelectItem value="Elite Admin">Elite Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
