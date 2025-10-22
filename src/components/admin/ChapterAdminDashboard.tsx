@@ -7,6 +7,10 @@ import ChapterStatsCards from './chapter/ChapterStatsCards';
 import MyEvents from './chapter/MyEvents';
 import ParticipantsTable from './chapter/ParticipantsTable';
 import ExportsSection from './chapter/ExportsSection';
+import RecentEvents from './chapter/RecentEvents';
+import PendingApprovals from './chapter/PendingApprovals';
+import QuickActionsGrid from './chapter/QuickActionsGrid';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function ChapterAdminDashboard() {
   const { signOut } = useAuth();
@@ -29,10 +33,16 @@ export default function ChapterAdminDashboard() {
   const fetchChapterStats = async () => {
     if (!chapter) return;
 
+    const { data: chapters } = await supabase
+      .from('chapters')
+      .select('id')
+      .eq('code', chapter)
+      .single();
+
     const { data: events } = await supabase
       .from('events')
       .select('id')
-      .eq('chapter', chapter);
+      .eq('chapter_id', chapters?.id || '');
 
     const eventIds = events?.map(e => e.id) || [];
 
@@ -43,7 +53,7 @@ export default function ChapterAdminDashboard() {
 
     setStats({
       chapterEvents: events?.length || 0,
-      pendingPayments: registrations?.filter(r => r.payment_status === 'pending').length || 0,
+      pendingPayments: registrations?.filter(r => r.status === 'submitted').length || 0,
       confirmedRegistrations: registrations?.filter(r => r.status === 'confirmed').length || 0,
       rejectedRegistrations: registrations?.filter(r => r.status === 'rejected').length || 0,
     });
@@ -59,11 +69,33 @@ export default function ChapterAdminDashboard() {
       case 'dashboard':
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold">{chapter} Chapter Dashboard</h1>
-              <p className="text-muted-foreground">Manage your chapter's events and registrations</p>
-            </div>
+            {/* Hero Banner */}
+            <Card className="bg-gradient-to-r from-purple-600 to-purple-800 border-none text-white">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-4xl">🎓</span>
+                  <div>
+                    <h1 className="text-3xl font-bold">UNI Guild - {chapter} Chapter Admin Control Center</h1>
+                    <p className="text-purple-100">Complete 360° overview: Manage events, participants, evaluators, organisers, and track analytics.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Cards */}
             <ChapterStatsCards stats={stats} />
+
+            {/* Recent Events and Pending Approvals */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <RecentEvents chapter={chapter} onViewRegistrations={handleViewRegistrations} />
+              <PendingApprovals chapter={chapter} />
+            </div>
+
+            {/* Quick Actions */}
+            <QuickActionsGrid onActionClick={(action) => {
+              if (action === 'create-event') setActiveTab('events');
+              if (action === 'manage-registrations') setActiveTab('participants');
+            }} />
           </div>
         );
       

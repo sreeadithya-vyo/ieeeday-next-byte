@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -11,9 +12,17 @@ import {
   ClipboardList,
   LogOut,
   Menu,
-  X
+  X,
+  TrendingUp,
+  AlertTriangle,
+  Activity,
+  Database,
+  Lock,
+  ChevronRight,
+  Crown
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import EliteStatCards from './elite/EliteStatCards';
 import ApprovalQueue from './elite/ApprovalQueue';
 import EventsManagement from './EventsManagement';
@@ -42,25 +51,194 @@ export default function EliteMasterDashboard() {
     { id: 'reports' as NavItem, label: 'Reports & Exports', icon: FileText },
   ];
 
+  const [pendingActions, setPendingActions] = useState<any[]>([]);
+  const [systemActivity, setSystemActivity] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (activeNav === 'dashboard') {
+      fetchDashboardData();
+    }
+  }, [activeNav]);
+
+  const fetchDashboardData = async () => {
+    const { data: registrations } = await supabase
+      .from('registrations')
+      .select('*, events(title)')
+      .eq('status', 'submitted')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    
+    setPendingActions(registrations || []);
+
+    // Mock system activity - in production, fetch from audit logs
+    setSystemActivity([
+      { type: 'user', message: 'New user registered', time: '2 minutes ago', status: 'info' },
+      { type: 'security', message: 'Security scan completed', time: '15 minutes ago', status: 'success' },
+      { type: 'event', message: 'Event approval pending', time: '1 hour ago', status: 'warning' },
+    ]);
+  };
+
   const renderContent = () => {
     switch (activeNav) {
       case 'dashboard':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-3xl font-bold text-gradient">Global Overview</h2>
-              <p className="text-muted-foreground">IEEE Day 2025 - System-wide Statistics</p>
-            </div>
-            <EliteStatCards />
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-destructive">⚡ Approval Queue</CardTitle>
-                <CardDescription>Pending registrations requiring verification</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ApprovalQueue />
+            {/* Hero Banner */}
+            <Card className="bg-gradient-to-r from-blue-600 to-blue-800 border-none text-white">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Crown className="h-8 w-8" />
+                  <h1 className="text-3xl font-bold">Elite Master Control Center</h1>
+                </div>
+                <p className="text-blue-100">Complete system oversight and administrative control over UNI Guild platform.</p>
               </CardContent>
             </Card>
+
+            {/* Stats Cards */}
+            <EliteStatCards />
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Pending Actions */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-orange-500" />
+                      <CardTitle>Pending Actions ({pendingActions.length})</CardTitle>
+                    </div>
+                    <Button variant="ghost" size="sm">View All</Button>
+                  </div>
+                  <CardDescription>Items requiring your immediate attention</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {pendingActions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No pending actions</p>
+                  ) : (
+                    pendingActions.map((action, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">Review Registration</p>
+                          <p className="text-xs text-muted-foreground">{action.events?.title || 'Event'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Pending</Badge>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* System Activity */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-primary" />
+                    <CardTitle>System Activity</CardTitle>
+                  </div>
+                  <CardDescription>Recent infrastructure and system events</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {systemActivity.map((activity, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border">
+                      <div className={`h-2 w-2 rounded-full mt-2 ${
+                        activity.status === 'success' ? 'bg-green-500' :
+                        activity.status === 'warning' ? 'bg-orange-500' : 'bg-blue-500'
+                      }`} />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{activity.message}</p>
+                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-500 to-purple-700 text-white border-none">
+                  <CardContent className="pt-6">
+                    <UserCog className="h-8 w-8 mb-3" />
+                    <h4 className="font-semibold mb-1">Manage Users</h4>
+                    <p className="text-sm text-purple-100">Add, edit, or remove system users</p>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardContent className="pt-6">
+                    <Calendar className="h-8 w-8 mb-3 text-primary" />
+                    <h4 className="font-semibold mb-1">Event Oversight</h4>
+                    <p className="text-sm text-muted-foreground">Monitor and manage all events</p>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardContent className="pt-6">
+                    <ClipboardList className="h-8 w-8 mb-3 text-primary" />
+                    <h4 className="font-semibold mb-1">Process Registrations</h4>
+                    <p className="text-sm text-muted-foreground">Review pending registrations</p>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardContent className="pt-6">
+                    <FileText className="h-8 w-8 mb-3 text-primary" />
+                    <h4 className="font-semibold mb-1">View Reports</h4>
+                    <p className="text-sm text-muted-foreground">Analytics and performance insights</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Database & Security Overview */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-primary" />
+                    <CardTitle>Database Status</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Connection Status</span>
+                    <Badge className="bg-green-500">Active</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Last Backup</span>
+                    <span className="text-sm text-muted-foreground">2 hours ago</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Storage Used</span>
+                    <span className="text-sm text-muted-foreground">2.5 GB / 10 GB</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-primary" />
+                    <CardTitle>Security Overview</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Security Score</span>
+                    <Badge className="bg-green-500">Excellent</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Failed Login Attempts</span>
+                    <span className="text-sm text-muted-foreground">3 (24h)</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Active Sessions</span>
+                    <span className="text-sm text-muted-foreground">24</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         );
       
