@@ -23,11 +23,29 @@ export default function Auth() {
   const [selectedRole, setSelectedRole] = useState<'elite_master' | 'super_admin' | 'event_admin'>('event_admin');
   const [selectedChapter, setSelectedChapter] = useState<'APS' | 'CS' | 'PES' | 'PROCOM' | 'SPS'>('APS');
 
-  // Redirect if already logged in
+  // Redirect if already logged in based on role
   useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
+    const checkRoleAndRedirect = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data?.role === 'elite_master') {
+          navigate('/admin/elite');
+        } else if (data?.role === 'super_admin') {
+          navigate('/admin/super');
+        } else if (data?.role === 'event_admin') {
+          navigate('/admin/chapter');
+        } else {
+          navigate('/');
+        }
+      }
+    };
+    
+    checkRoleAndRedirect();
   }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -44,11 +62,36 @@ export default function Auth() {
     
     if (error) {
       toast.error(error.message || 'Failed to sign in');
+      setLoading(false);
     } else {
       toast.success('Successfully signed in!');
-      navigate('/');
+      
+      // Get user session to fetch role
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        // Redirect based on role
+        if (data?.role === 'elite_master') {
+          navigate('/admin/elite');
+        } else if (data?.role === 'super_admin') {
+          navigate('/admin/super');
+        } else if (data?.role === 'event_admin') {
+          navigate('/admin/chapter');
+        } else {
+          navigate('/');
+        }
+      } else {
+        navigate('/');
+      }
+      
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
