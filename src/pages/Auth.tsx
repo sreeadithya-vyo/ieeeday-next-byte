@@ -17,11 +17,11 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [loginRole, setLoginRole] = useState<string>('');
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
-  const [requestedRole, setRequestedRole] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<'elite_master' | 'super_admin' | 'event_admin'>('event_admin');
+  const [selectedChapter, setSelectedChapter] = useState<'APS' | 'CS' | 'PES' | 'PROCOM' | 'SPS'>('APS');
 
   // Redirect if already logged in
   useEffect(() => {
@@ -75,20 +75,26 @@ export default function Auth() {
       } else {
         toast.error(error.message || 'Failed to sign up');
       }
-    } else {
-      // Store requested role if provided
-      if (requestedRole && user) {
-        await supabase
-          .from('profiles')
-          .update({ requested_role: requestedRole })
-          .eq('id', user.id);
+    } else if (user) {
+      // Assign the selected role immediately
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: user.id,
+          role: selectedRole,
+          chapter: selectedRole === 'event_admin' ? selectedChapter : null
+        });
+
+      if (roleError) {
+        console.error('Error assigning role:', roleError);
+        toast.error('Account created but role assignment failed. Please contact admin.');
+      } else {
+        toast.success('Account created with ' + (selectedRole === 'elite_master' ? 'Elite Admin' : selectedRole === 'super_admin' ? 'Super Admin' : selectedChapter + ' Admin') + ' role!');
       }
       
-      toast.success('Account created! Please check your email to verify your account.');
       setSignupName('');
       setSignupEmail('');
       setSignupPassword('');
-      setRequestedRole('');
     }
     setLoading(false);
   };
@@ -130,23 +136,6 @@ export default function Auth() {
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-role">Select Role</Label>
-                  <Select value={loginRole} onValueChange={setLoginRole}>
-                    <SelectTrigger id="login-role" className="bg-background">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background z-50">
-                      <SelectItem value="APS Chair">APS Chair</SelectItem>
-                      <SelectItem value="SPS Chair">SPS Chair</SelectItem>
-                      <SelectItem value="PROCOM Chair">PROCOM Chair</SelectItem>
-                      <SelectItem value="CS Chair">CS Chair</SelectItem>
-                      <SelectItem value="PES Chair">PES Chair</SelectItem>
-                      <SelectItem value="Super Admin">Super Admin</SelectItem>
-                      <SelectItem value="Elite Admin">Elite Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -191,23 +180,36 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="requested-role">Apply for Role (Optional)</Label>
-                  <Select value={requestedRole} onValueChange={setRequestedRole}>
-                    <SelectTrigger id="requested-role" className="bg-background">
-                      <SelectValue placeholder="Select a role to apply for" />
+                  <Label htmlFor="select-role">Select Your Admin Role</Label>
+                  <Select value={selectedRole} onValueChange={(value: any) => setSelectedRole(value)}>
+                    <SelectTrigger id="select-role" className="bg-background">
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-background z-50">
-                      <SelectItem value="APS Chair">APS Chair</SelectItem>
-                      <SelectItem value="SPS Chair">SPS Chair</SelectItem>
-                      <SelectItem value="PROCOM Chair">PROCOM Chair</SelectItem>
-                      <SelectItem value="CS Chair">CS Chair</SelectItem>
-                      <SelectItem value="PES Chair">PES Chair</SelectItem>
-                      <SelectItem value="Super Admin">Super Admin</SelectItem>
-                      <SelectItem value="Elite Admin">Elite Admin</SelectItem>
+                      <SelectItem value="elite_master">Elite Admin (Full Access)</SelectItem>
+                      <SelectItem value="super_admin">Super Admin (Global Admin)</SelectItem>
+                      <SelectItem value="event_admin">Chapter Admin</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Your role request will be reviewed by administrators</p>
                 </div>
+
+                {selectedRole === 'event_admin' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="select-chapter">Select Your Chapter</Label>
+                    <Select value={selectedChapter} onValueChange={(value: any) => setSelectedChapter(value)}>
+                      <SelectTrigger id="select-chapter" className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        <SelectItem value="APS">AP-S Chapter</SelectItem>
+                        <SelectItem value="CS">CS Chapter</SelectItem>
+                        <SelectItem value="PES">PES Chapter</SelectItem>
+                        <SelectItem value="PROCOM">PROCOM Chapter</SelectItem>
+                        <SelectItem value="SPS">SP-S Chapter</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Create Account
