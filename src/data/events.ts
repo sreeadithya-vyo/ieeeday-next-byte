@@ -1,6 +1,11 @@
 import mlAntennaImage from "@/assets/ml-antenna.jpg";
 import pptContestImage from "@/assets/ppt-contest.jpg";
 import circuitManiaImage from "@/assets/circuit-mania.jpg";
+import escapeRoomImage from "@/assets/escape-room.jpg";
+import reverseCodingImage from "@/assets/reverse-coding.jpg";
+import mindsphereQuizImage from "@/assets/mindsphere-quiz.jpg";
+import digitalPresenceImage from "@/assets/digital-presence-workshop.jpg";
+import techQuizImage from "@/assets/tech-quiz.jpg";
 
 export interface Event {
   id: string;
@@ -83,6 +88,81 @@ export const eventsData: Record<string, Event> = {
       "Real-time performance analysis"
     ]
   },
+  "escape-room": {
+    id: "escape-room",
+    title: "Escape Room Challenge",
+    organizer: "Sasi IEEE Signal Processing Society Chapter",
+    date: "31 October 2025",
+    day: 1,
+    start_time: "09:00",
+    end_time: "16:20",
+    venue: "Nikola Tesla Block, SITE",
+    short_desc: "Interactive experience where teams solve clues, puzzles, and challenges to escape before time runs out.",
+    long_desc: "An immersive escape room event combining technical challenges with problem-solving. Teams are placed in a themed scenario and must work collaboratively to solve a series of engineering-based puzzles and challenges within a time limit. This event tests both technical knowledge and teamwork under pressure.",
+    image: escapeRoomImage,
+    coordinators: [
+      { name: "Ch. Keerthi Sri", phone: "+91XXXXXXXXXX" },
+      { name: "P. Likhhita", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "09:00 AM – 11:00 AM", activity: "Inauguration of CSG Chapter" },
+      { time: "11:00 AM – 11:30 AM", activity: "Address by Dr. Naveen Kishore (HOD)" },
+      { time: "11:30 AM – 12:30 PM", activity: "1st Round of Escape Room" },
+      { time: "12:30 PM – 01:30 PM", activity: "Lunch Break" },
+      { time: "01:30 PM – 03:30 PM", activity: "2nd Round (Puzzles/Challenges)" },
+      { time: "03:30 PM – 03:45 PM", activity: "Tea Break" },
+      { time: "03:45 PM – 04:20 PM", activity: "Cash Prize & Certificate Distribution" }
+    ],
+    program_outcomes: [
+      "Technical Knowledge Application: Apply core ECE concepts to solve practical, time-bound challenges",
+      "Problem-Solving and Critical Thinking: Analyze complex problems and use systematic reasoning",
+      "Teamwork and Collaboration: Effectively collaborate and leverage team dynamics under pressure"
+    ]
+  },
+  "digital-presence-workshop": {
+    id: "digital-presence-workshop",
+    title: "Professional Empowerment Workshop: Shaping Your Digital Presence in Industry 4.0",
+    organizer: "Sasi IEEE Professional Communication Society Chapter",
+    date: "31 October 2025",
+    day: 1,
+    start_time: "09:30",
+    end_time: "15:45",
+    venue: "Sasi Institute of Technology and Engineering",
+    short_desc: "Build your digital identity, personal brand, and professional portfolio for Industry 4.0.",
+    long_desc: "A comprehensive workshop focusing on building a strong digital presence in the modern professional world. Learn to craft compelling portfolios, optimize LinkedIn profiles, and develop effective personal branding strategies from industry experts.",
+    image: digitalPresenceImage,
+    guest: {
+      name: "Mr. Niranjan",
+      designation: "IEEE YP Representative",
+      institution: "IEEE Professional Communication Society",
+      role: "Guest of Honour and Resource Person"
+    },
+    coordinators: [
+      { name: "N. Mohana Raja", phone: "+91XXXXXXXXXX" },
+      { name: "G. Rambabu", phone: "+91XXXXXXXXXX" },
+      { name: "K. Tejaswani Devi", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "09:30 AM – 10:00 AM", activity: "Inaugural Ceremony & Icebreaker Session" },
+      { time: "10:00 AM – 11:00 AM", activity: "Session 1: Content Building for Personal Portfolio – Part 1" },
+      { time: "11:00 AM – 11:30 AM", activity: "Networking Break" },
+      { time: "11:30 AM – 12:30 PM", activity: "Session 2: Content Building for Personal Portfolio – Part 2" },
+      { time: "12:30 PM – 01:30 PM", activity: "Networking Lunch" },
+      { time: "01:30 PM – 03:30 PM", activity: "IEEE Day Celebrations & Events" },
+      { time: "03:30 PM – 03:45 PM", activity: "Closing of Day 1" }
+    ],
+    program_outcomes: [
+      "Gained strategies to build a strong digital identity and personal brand",
+      "Developed professionalism and career readiness aligned with Industry 4.0",
+      "Learned effective digital communication and online portfolio management for career growth"
+    ],
+    topics: [
+      "Identifying strengths and professional highlights",
+      "Developing personalized statements",
+      "Project summaries and achievements documentation",
+      "LinkedIn optimization strategies"
+    ]
+  },
   "ppt-contest": {
     id: "ppt-contest",
     title: "PPT Presentation Contest",
@@ -163,6 +243,107 @@ export const eventsData: Record<string, Event> = {
       { name: "Design Efficiency", points: 25 },
       { name: "Safety & Build Quality", points: 20 },
       { name: "Time Efficiency", points: 20 }
+    ]
+  },
+  "reverse-coding": {
+    id: "reverse-coding",
+    title: "Reverse Coding Contest",
+    organizer: "Sasi IEEE Signal Processing Society",
+    date: "1 November 2025",
+    day: 2,
+    start_time: "09:30",
+    end_time: "12:00",
+    venue: "Sasi Institute of Technology and Engineering",
+    short_desc: "Challenge your debugging skills by analyzing code output and reconstructing the logic.",
+    long_desc: "A unique coding competition where participants are given the output of a program and must reverse-engineer the code to match the given results. This event tests debugging abilities, algorithmic thinking, and problem-solving under pressure.",
+    image: reverseCodingImage,
+    coordinators: [
+      { name: "P. Rajeswari", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "09:00 AM – 09:15 AM", activity: "Welcome Note and Opening Ceremony" },
+      { time: "09:15 AM – 09:30 AM", activity: "Introduction to Events" },
+      { time: "09:30 AM – 12:00 PM", activity: "Reverse Coding Contest" },
+      { time: "12:00 PM – 01:00 PM", activity: "Lunch Break" }
+    ],
+    program_outcomes: [
+      "Enhanced Problem-Solving Skills: Develop ability to think backwards from output to code",
+      "Improved Debugging Abilities: Master techniques for identifying and fixing code issues",
+      "Deeper Understanding of Algorithms: Strengthen grasp of logic and algorithmic patterns",
+      "Exposure to Real-World Coding Practices: Experience practical debugging scenarios"
+    ]
+  },
+  "mindsphere-quiz": {
+    id: "mindsphere-quiz",
+    title: "Mindsphere Quiz",
+    organizer: "Sasi IEEE Signal Processing Society",
+    date: "1 November 2025",
+    day: 2,
+    start_time: "13:00",
+    end_time: "15:30",
+    venue: "Sasi Institute of Technology and Engineering",
+    short_desc: "Test your knowledge across engineering concepts, current affairs, and general knowledge.",
+    long_desc: "An engaging quiz competition covering diverse topics from core engineering concepts to current affairs and general knowledge. Teams compete through multiple rounds testing quick thinking, recall ability, and breadth of knowledge.",
+    image: mindsphereQuizImage,
+    coordinators: [
+      { name: "Ch. Venkateswara Rao", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "01:00 PM – 03:30 PM", activity: "Mindsphere Quiz Competition" },
+      { time: "03:30 PM – 03:40 PM", activity: "Break" },
+      { time: "03:40 PM – 04:00 PM", activity: "Prize Distribution Ceremony – Winners from All IEEE Chapters" },
+      { time: "04:00 PM – 04:20 PM", activity: "Vote of Thanks" },
+      { time: "04:20 PM – 04:30 PM", activity: "Group Photo & Closing of IEEE Day 2025" }
+    ],
+    program_outcomes: [
+      "Enhanced general knowledge by staying updated on current affairs and global events",
+      "Encouraged teamwork and quick thinking through competitive quizzing",
+      "Strengthened understanding of core engineering concepts",
+      "Fostered healthy competition and boosted confidence in recalling information under pressure"
+    ]
+  },
+  "tech-quiz": {
+    id: "tech-quiz",
+    title: "Tech Quiz Championship",
+    organizer: "Sasi IEEE Professional Communication Society Chapter",
+    date: "1 November 2025",
+    day: 2,
+    start_time: "09:30",
+    end_time: "15:30",
+    venue: "Sasi Institute of Technology and Engineering",
+    short_desc: "Multi-round quiz covering mathematics, technology, and aptitude challenges.",
+    long_desc: "A comprehensive quiz competition integrated with professional portfolio building sessions. Participants compete in multiple rounds covering mathematics, general knowledge, technology, and aptitude while learning to create digital portfolios and enhance their professional presence.",
+    image: techQuizImage,
+    guest: {
+      name: "Mr. Heyram & Mr. Ashvanth",
+      designation: "Industry Professionals",
+      institution: "Zoho Corporations & MassMutual India",
+      role: "Workshop Speakers and Quiz Mentors"
+    },
+    coordinators: [
+      { name: "P. Sai Ganesh", phone: "+91XXXXXXXXXX" },
+      { name: "V. Tejaswini", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "09:30 AM – 11:00 AM", activity: "Session: Creating Your Digital Portfolio & Website – Part 1" },
+      { time: "11:00 AM – 11:30 AM", activity: "Networking Break" },
+      { time: "11:30 AM – 12:00 PM", activity: "Session Continued: Launching Website Live" },
+      { time: "12:00 PM – 12:30 PM", activity: "Session: Personal Branding & Presentation Skills" },
+      { time: "12:30 PM – 01:30 PM", activity: "Networking Lunch" },
+      { time: "01:30 PM – 03:00 PM", activity: "Session: Design, Layout & Visual Identity" },
+      { time: "03:00 PM – 03:30 PM", activity: "Closing Ceremony & Vote of Thanks" }
+    ],
+    program_outcomes: [
+      "Enhanced knowledge and problem-solving skills across mathematics, general knowledge, and technology",
+      "Improved aptitude, observation, and memory through multi-round challenges",
+      "Developed quick thinking and analytical skills by solving diverse quiz rounds",
+      "Learned to create professional digital portfolios and personal brands"
+    ],
+    topics: [
+      "GitHub Pages and WordPress portfolio creation",
+      "LinkedIn optimization strategies",
+      "Design principles using Canva/Figma",
+      "Mathematics and technology quiz rounds"
     ]
   }
 };
