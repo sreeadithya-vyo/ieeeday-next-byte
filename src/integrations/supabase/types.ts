@@ -14,16 +14,257 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          resource_id: string
+          resource_type: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          resource_id: string
+          resource_type: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          resource_id?: string
+          resource_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          assigned_admin_id: string | null
+          chapter: Database["public"]["Enums"]["chapter_type"]
+          created_at: string | null
+          criteria: string[] | null
+          date: string
+          day: number
+          guest: string | null
+          id: string
+          image: string | null
+          long_desc: string | null
+          organizer: string | null
+          program_outcomes: string[] | null
+          rules: string[] | null
+          schedule: Json | null
+          short_desc: string | null
+          title: string
+          topics: string[] | null
+          updated_at: string | null
+          venue: string | null
+        }
+        Insert: {
+          assigned_admin_id?: string | null
+          chapter: Database["public"]["Enums"]["chapter_type"]
+          created_at?: string | null
+          criteria?: string[] | null
+          date: string
+          day: number
+          guest?: string | null
+          id: string
+          image?: string | null
+          long_desc?: string | null
+          organizer?: string | null
+          program_outcomes?: string[] | null
+          rules?: string[] | null
+          schedule?: Json | null
+          short_desc?: string | null
+          title: string
+          topics?: string[] | null
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Update: {
+          assigned_admin_id?: string | null
+          chapter?: Database["public"]["Enums"]["chapter_type"]
+          created_at?: string | null
+          criteria?: string[] | null
+          date?: string
+          day?: number
+          guest?: string | null
+          id?: string
+          image?: string | null
+          long_desc?: string | null
+          organizer?: string | null
+          program_outcomes?: string[] | null
+          rules?: string[] | null
+          schedule?: Json | null
+          short_desc?: string | null
+          title?: string
+          topics?: string[] | null
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          branch: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string | null
+          year: string | null
+        }
+        Insert: {
+          branch?: string | null
+          created_at?: string | null
+          email: string
+          id: string
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+          year?: string | null
+        }
+        Update: {
+          branch?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          participant_branch: string
+          participant_email: string
+          participant_name: string
+          participant_phone: string
+          participant_year: string
+          payment_proof_url: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          rejection_note: string | null
+          status: Database["public"]["Enums"]["registration_status"]
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          participant_branch: string
+          participant_email: string
+          participant_name: string
+          participant_phone: string
+          participant_year: string
+          payment_proof_url?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          rejection_note?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          participant_branch?: string
+          participant_email?: string
+          participant_name?: string
+          participant_phone?: string
+          participant_year?: string
+          payment_proof_url?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          rejection_note?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          chapter: Database["public"]["Enums"]["chapter_type"] | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          chapter?: Database["public"]["Enums"]["chapter_type"] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          chapter?: Database["public"]["Enums"]["chapter_type"] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_chapter: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["chapter_type"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "elite_master"
+        | "super_admin"
+        | "event_admin"
+        | "viewer"
+        | "user"
+      chapter_type: "APS" | "SPS" | "PROCOM" | "CS" | "PES"
+      payment_status: "pending" | "verified" | "rejected"
+      registration_status: "submitted" | "confirmed" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +391,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "elite_master",
+        "super_admin",
+        "event_admin",
+        "viewer",
+        "user",
+      ],
+      chapter_type: ["APS", "SPS", "PROCOM", "CS", "PES"],
+      payment_status: ["pending", "verified", "rejected"],
+      registration_status: ["submitted", "confirmed", "rejected"],
+    },
   },
 } as const
