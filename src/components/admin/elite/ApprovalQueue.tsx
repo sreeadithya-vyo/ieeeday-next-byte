@@ -39,13 +39,19 @@ export default function ApprovalQueue() {
       .from('registrations')
       .select(`
         *,
-        events(title, chapter)
+        events(title, chapters(code))
       `)
       .eq('status', 'submitted')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setRegistrations(data as Registration[]);
+      setRegistrations(data.map(reg => ({
+        ...reg,
+        events: reg.events ? {
+          title: reg.events.title,
+          chapter: (reg.events as any).chapters?.code || 'N/A',
+        } : undefined,
+      })) as Registration[]);
     }
   };
 

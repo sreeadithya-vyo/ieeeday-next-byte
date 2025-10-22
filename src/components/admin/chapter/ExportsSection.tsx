@@ -16,16 +16,29 @@ export default function ExportsSection({ chapter }: ExportsSectionProps) {
   const exportData = async (type: 'all' | 'pending' | 'verified') => {
     setLoading(type);
 
+    // First get the chapter_id
+    const { data: chapterData } = await supabase
+      .from('chapters')
+      .select('id')
+      .eq('code', chapter)
+      .single();
+    
+    if (!chapterData) {
+      toast.error('Chapter not found');
+      setLoading(null);
+      return;
+    }
+
     const { data: events } = await supabase
       .from('events')
       .select('id')
-      .eq('chapter', chapter);
+      .eq('chapter_id', chapterData.id);
 
     const eventIds = events?.map(e => e.id) || [];
 
     let query = supabase
       .from('registrations')
-      .select('*, events(title, chapter)')
+      .select('*, events(title, chapters(code))')
       .in('event_id', eventIds);
 
     if (type === 'pending') {
@@ -43,16 +56,15 @@ export default function ExportsSection({ chapter }: ExportsSectionProps) {
     }
 
     const csv = [
-      ['Name', 'Email', 'Phone', 'Branch', 'Year', 'Event', 'Payment Status', 'Transaction ID', 'Date'],
+      ['Name', 'Email', 'Phone', 'Branch', 'Year', 'Event', 'Payment Status', 'Date'],
       ...registrations.map((r: any) => [
         r.participant_name,
         r.participant_email,
-        r.participant_phone,
-        r.participant_branch,
-        r.participant_year,
-        r.events.title,
-        r.payment_status,
-        r.transaction_id || '',
+        r.participant_phone || '',
+        r.participant_branch || '',
+        r.participant_year || '',
+        r.events?.title || 'N/A',
+        r.payment_status || 'pending',
         new Date(r.created_at).toLocaleDateString(),
       ]),
     ]

@@ -35,7 +35,7 @@ export default function EventsManagement() {
 
     const { data: eventsData } = await supabase
       .from('events')
-      .select('*')
+      .select('*, chapters(code)')
       .order('date', { ascending: true });
 
     const { data: adminsData } = await supabase
@@ -43,7 +43,14 @@ export default function EventsManagement() {
       .select('user_id, chapter, profiles(name)')
       .eq('role', 'event_admin');
 
-    setEvents(eventsData || []);
+    setEvents(eventsData?.map(e => ({
+      id: e.id,
+      title: e.title,
+      chapter: (e.chapters as any)?.code || '',
+      day: e.day,
+      date: e.date,
+      assigned_admin_id: e.assigned_admin_id,
+    })) || []);
     setAdmins(adminsData?.map(a => ({
       id: a.user_id,
       name: (a.profiles as any)?.name || 'Unknown',

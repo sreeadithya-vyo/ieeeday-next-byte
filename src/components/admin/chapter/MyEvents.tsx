@@ -33,10 +33,23 @@ export default function MyEvents({ chapter, onViewRegistrations }: MyEventsProps
 
   const fetchEvents = async () => {
     setLoading(true);
+    
+    // First get the chapter_id
+    const { data: chapterData } = await supabase
+      .from('chapters')
+      .select('id')
+      .eq('code', chapter)
+      .single();
+    
+    if (!chapterData) {
+      setLoading(false);
+      return;
+    }
+    
     const { data: eventsData, error } = await supabase
       .from('events')
-      .select('id, title, date, day, venue, chapter')
-      .eq('chapter', chapter)
+      .select('id, title, date, day, venue, chapters(code)')
+      .eq('chapter_id', chapterData.id)
       .order('day', { ascending: true });
 
     if (error) {
@@ -53,7 +66,12 @@ export default function MyEvents({ chapter, onViewRegistrations }: MyEventsProps
           .eq('event_id', event.id);
 
         return {
-          ...event,
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          day: event.day,
+          venue: event.venue,
+          chapter: (event.chapters as any)?.code || '',
           registrationsCount: registrations?.length || 0,
           pendingCount: registrations?.filter(r => r.payment_status === 'pending').length || 0,
         };
@@ -67,7 +85,7 @@ export default function MyEvents({ chapter, onViewRegistrations }: MyEventsProps
   const exportEventData = async (eventId: string, eventTitle: string) => {
     const { data: registrations } = await supabase
       .from('registrations')
-      .select('participant_name, participant_email, participant_phone, participant_branch, participant_year, status, payment_status, transaction_id, created_at')
+      .select('participant_name, participant_email, participant_phone, participant_branch, participant_year, status, payment_status, created_at')
       .eq('event_id', eventId);
 
     if (!registrations) {
@@ -76,16 +94,15 @@ export default function MyEvents({ chapter, onViewRegistrations }: MyEventsProps
     }
 
     const csv = [
-      ['Name', 'Email', 'Phone', 'Branch', 'Year', 'Status', 'Payment', 'Transaction ID', 'Date'],
+      ['Name', 'Email', 'Phone', 'Branch', 'Year', 'Status', 'Payment', 'Date'],
       ...registrations.map(r => [
         r.participant_name,
         r.participant_email,
-        r.participant_phone,
-        r.participant_branch,
-        r.participant_year,
+        r.participant_phone || '',
+        r.participant_branch || '',
+        r.participant_year || '',
         r.status,
-        r.payment_status,
-        r.transaction_id || '',
+        r.payment_status || 'pending',
         new Date(r.created_at).toLocaleDateString(),
       ]),
     ].map(row => row.join(',')).join('\n');

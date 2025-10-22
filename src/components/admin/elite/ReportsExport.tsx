@@ -53,12 +53,9 @@ export default function ReportsExport() {
           .from('registrations')
           .select(`
             *,
-            events(title, chapter)
+            events(title, chapters(code))
           `);
 
-        if (filterChapter) {
-          query = query.eq('events.chapter', filterChapter as any);
-        }
         if (filterStatus) {
           query = query.eq('status', filterStatus as any);
         }
@@ -67,15 +64,20 @@ export default function ReportsExport() {
 
         if (error) throw error;
 
-        const formatted = data.map(reg => ({
+        let filtered = data;
+        if (filterChapter) {
+          filtered = data.filter(reg => (reg.events as any)?.chapters?.code === filterChapter);
+        }
+
+        const formatted = filtered.map(reg => ({
           'Registration ID': reg.id,
           'Participant Name': reg.participant_name,
           'Email': reg.participant_email,
           'Phone': reg.participant_phone,
           'Branch': reg.participant_branch,
           'Year': reg.participant_year,
-          'Event': reg.events?.title || 'N/A',
-          'Chapter': reg.events?.chapter || 'N/A',
+          'Event': (reg.events as any)?.title || 'N/A',
+          'Chapter': (reg.events as any)?.chapters?.code || 'N/A',
           'Status': reg.status,
           'Payment Status': reg.payment_status,
           'Created At': new Date(reg.created_at).toLocaleString(),
@@ -96,17 +98,18 @@ export default function ReportsExport() {
           .from('registrations')
           .select(`
             *,
-            events!inner(title, chapter)
-          `)
-          .eq('events.chapter', filterChapter as any);
+            events(title, chapters!inner(code))
+          `);
 
         if (error) throw error;
 
-        const formatted = data.map(reg => ({
+        const filtered = data.filter(reg => (reg.events as any)?.chapters?.code === filterChapter);
+
+        const formatted = filtered.map(reg => ({
           'Registration ID': reg.id,
           'Participant Name': reg.participant_name,
           'Email': reg.participant_email,
-          'Event': reg.events?.title || 'N/A',
+          'Event': (reg.events as any)?.title || 'N/A',
           'Status': reg.status,
           'Payment Status': reg.payment_status,
         }));
@@ -120,14 +123,14 @@ export default function ReportsExport() {
           .from('registrations')
           .select(`
             *,
-            events(title, chapter)
+            events(title, chapters(code))
           `);
 
         if (error) throw error;
 
         const formatted = data.map(reg => ({
-          'Event': reg.events?.title || 'N/A',
-          'Chapter': reg.events?.chapter || 'N/A',
+          'Event': (reg.events as any)?.title || 'N/A',
+          'Chapter': (reg.events as any)?.chapters?.code || 'N/A',
           'Participant': reg.participant_name,
           'Email': reg.participant_email,
           'Status': reg.status,

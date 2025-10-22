@@ -17,13 +17,14 @@ interface Registration {
   participant_year: string;
   status: string;
   payment_status: string;
-  transaction_id: string;
   payment_proof_url: string;
   created_at: string;
   events: {
     id: string;
     title: string;
-    chapter: string;
+    chapters?: {
+      code: string;
+    };
   };
 }
 
@@ -45,16 +46,28 @@ export default function ParticipantsTable({ chapter, eventFilter }: Participants
   const fetchRegistrations = async () => {
     setLoading(true);
 
+    // First get the chapter_id
+    const { data: chapterData } = await supabase
+      .from('chapters')
+      .select('id')
+      .eq('code', chapter)
+      .single();
+    
+    if (!chapterData) {
+      setLoading(false);
+      return;
+    }
+
     const { data: events } = await supabase
       .from('events')
       .select('id')
-      .eq('chapter', chapter);
+      .eq('chapter_id', chapterData.id);
 
     const eventIds = events?.map(e => e.id) || [];
 
     let query = supabase
       .from('registrations')
-      .select('*, events(id, title, chapter)')
+      .select('*, events(id, title, chapters(code))')
       .in('event_id', eventIds);
 
     if (eventFilter) {
