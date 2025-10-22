@@ -1,97 +1,13 @@
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, ArrowLeft, Users } from "lucide-react";
-import mlAntennaImage from "@/assets/ml-antenna.jpg";
-import pptContestImage from "@/assets/ppt-contest.jpg";
-import circuitManiaImage from "@/assets/circuit-mania.jpg";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, MapPin, ArrowLeft, Users, Award, Phone } from "lucide-react";
+import { getEventById } from "@/data/events";
 
 const EventDetail = () => {
   const { eventId } = useParams();
-
-  const eventsData: Record<string, any> = {
-    "ml-antenna": {
-      title: "ML for Antenna Design",
-      image: mlAntennaImage,
-      date: "31 October 2025",
-      venue: "ECE Lab",
-      time: "09:00 AM – 04:15 PM",
-      about: "Hands-on technical workshop that integrates machine learning techniques into antenna design and optimization. Students learn how to automate antenna parameter tuning using Python and HFSS tools.",
-      topics: [
-        "Basics of ML models for EM applications",
-        "Antenna design workflow in HFSS",
-        "Optimization using Genetic Algorithm",
-        "Real-time performance analysis",
-      ],
-      schedule: [
-        { time: "09:00 – 09:20", activity: "Inauguration" },
-        { time: "09:20 – 09:50", activity: "Keynote" },
-        { time: "10:00 – 11:20", activity: "Session I — Lecture & Demo" },
-        { time: "11:20 – 13:00", activity: "Hands-on Exercise" },
-        { time: "13:00 – 14:00", activity: "Lunch Break" },
-        { time: "14:00 – 15:30", activity: "Lab Session + Q&A" },
-        { time: "15:45 – 16:15", activity: "Certificate Distribution" },
-      ],
-      jury: [
-        "Dr. Rajesh Kumar, Professor, ECE Dept.",
-        "Mr. Ankit Sharma, Senior Engineer, Tech Innovations",
-      ],
-      deliverables: [
-        "Participation Certificate",
-        "Project File Submission",
-      ],
-    },
-    "ppt-contest": {
-      title: "PPT Presentation Contest",
-      image: pptContestImage,
-      date: "1 November 2025",
-      venue: "Seminar Hall",
-      time: "01:00 PM – 04:00 PM",
-      about: "Showcase innovative ideas in technology, energy, and sustainability before a panel of experts.",
-      rules: [
-        "Max 3 participants per team",
-        "Presentation time: 7 minutes + 3 minutes Q&A",
-        "Topics: Emerging Technologies, Future Energy Systems, AI Applications",
-      ],
-      schedule: [
-        { time: "13:00 – 15:00", activity: "PPT Presentations" },
-        { time: "15:00 – 15:30", activity: "Jury Discussion" },
-        { time: "15:30 – 16:00", activity: "Prize Distribution" },
-      ],
-      criteria: [
-        { name: "Innovation", points: 30 },
-        { name: "Technical Depth", points: 25 },
-        { name: "Presentation Clarity", points: 25 },
-        { name: "Q&A Handling", points: 20 },
-      ],
-    },
-    "circuit-mania": {
-      title: "Circuit Mania",
-      image: circuitManiaImage,
-      date: "1 November 2025",
-      venue: "ECE Lab",
-      time: "10:00 AM – 04:00 PM",
-      about: "A real-time circuit design and debugging competition. Participants test electronics skills under time pressure.",
-      rules: [
-        "Teams of 2–3",
-        "Components and tools provided",
-        "No external help or mobile usage allowed",
-      ],
-      schedule: [
-        { time: "10:00 – 12:00", activity: "Circuit Design & Debugging" },
-        { time: "12:00 – 12:30", activity: "Evaluation" },
-        { time: "15:30 – 16:00", activity: "Results Announcement" },
-      ],
-      criteria: [
-        { name: "Correctness", points: 35 },
-        { name: "Design Efficiency", points: 25 },
-        { name: "Safety & Build Quality", points: 20 },
-        { name: "Time Efficiency", points: 20 },
-      ],
-    },
-  };
-
-  const event = eventId ? eventsData[eventId] : null;
+  const event = eventId ? getEventById(eventId) : null;
 
   if (!event) {
     return (
@@ -124,7 +40,17 @@ const EventDetail = () => {
           />
         </div>
 
-        <h1 className="mb-6 text-4xl font-bold">{event.title}</h1>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="mb-2 text-4xl font-bold">{event.title}</h1>
+            <p className="text-lg text-muted-foreground">{event.organizer}</p>
+          </div>
+          <Link to={`/register?event=${event.id}`}>
+            <Button size="lg" className="gap-2">
+              Register Now
+            </Button>
+          </Link>
+        </div>
 
         <div className="mb-8 flex flex-wrap gap-4">
           <div className="flex items-center gap-2 rounded-lg bg-secondary px-4 py-2">
@@ -137,29 +63,51 @@ const EventDetail = () => {
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-secondary px-4 py-2">
             <Clock className="h-5 w-5 text-primary" />
-            <span className="font-medium">{event.time}</span>
+            <span className="font-medium">{event.start_time} – {event.end_time}</span>
           </div>
+          <Badge variant="outline" className="px-4 py-2 text-base">
+            Day {event.day}
+          </Badge>
         </div>
+
+        {event.guest && (
+          <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                {event.guest.role}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1">
+                <p className="text-xl font-semibold">{event.guest.name}</p>
+                <p className="text-muted-foreground">{event.guest.designation}</p>
+                <p className="text-sm text-muted-foreground">{event.guest.institution}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>About</CardTitle>
+            <CardTitle>About the Event</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{event.about}</p>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">{event.long_desc}</p>
+            <p className="text-sm text-muted-foreground">{event.short_desc}</p>
           </CardContent>
         </Card>
 
-        {event.topics && (
+        {event.topics && event.topics.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Topics Covered</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2">
-                {event.topics.map((topic: string, index: number) => (
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {event.topics.map((topic, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                    <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                     <span className="text-muted-foreground">{topic}</span>
                   </li>
                 ))}
@@ -168,16 +116,18 @@ const EventDetail = () => {
           </Card>
         )}
 
-        {event.rules && (
+        {event.rules && event.rules.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Rules</CardTitle>
+              <CardTitle>Rules & Guidelines</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2">
-                {event.rules.map((rule: string, index: number) => (
+              <ul className="space-y-3">
+                {event.rules.map((rule, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                    <Badge variant="outline" className="mt-0.5 h-6 w-6 flex-shrink-0 items-center justify-center rounded-full p-0">
+                      {index + 1}
+                    </Badge>
                     <span className="text-muted-foreground">{rule}</span>
                   </li>
                 ))}
@@ -188,7 +138,7 @@ const EventDetail = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Schedule</CardTitle>
+            <CardTitle>Event Schedule</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -200,9 +150,9 @@ const EventDetail = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {event.schedule.map((item: any, index: number) => (
-                    <tr key={index} className="border-b border-border/50">
-                      <td className="py-3 pr-4 font-medium text-primary">{item.time}</td>
+                  {event.schedule.map((item, index) => (
+                    <tr key={index} className="border-b border-border/50 last:border-0">
+                      <td className="py-3 pr-4 font-medium text-primary whitespace-nowrap">{item.time}</td>
                       <td className="py-3 text-muted-foreground">{item.activity}</td>
                     </tr>
                   ))}
@@ -212,38 +162,43 @@ const EventDetail = () => {
           </CardContent>
         </Card>
 
-        {event.jury && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Jury Members
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {event.jury.map((member: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">{member}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              Event Coordinators
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {event.coordinators.map((coordinator, index) => (
+                <div key={index} className="rounded-lg border border-border bg-secondary/30 p-4">
+                  <p className="font-semibold">{coordinator.name}</p>
+                  <a 
+                    href={`tel:${coordinator.phone}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {coordinator.phone}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-        {event.criteria && (
+        {event.criteria && event.criteria.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Judging Criteria</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {event.criteria.map((criterion: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{criterion.name}</span>
-                    <span className="font-semibold text-primary">{criterion.points} points</span>
+                {event.criteria.map((criterion, index) => (
+                  <div key={index} className="flex items-center justify-between rounded-lg bg-secondary/30 p-3">
+                    <span className="font-medium">{criterion.name}</span>
+                    <Badge variant="default" className="text-base">
+                      {criterion.points} points
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -251,23 +206,31 @@ const EventDetail = () => {
           </Card>
         )}
 
-        {event.deliverables && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Deliverables</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {event.deliverables.map((item: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Program Outcomes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {event.program_outcomes.map((outcome, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    {index + 1}
+                  </span>
+                  <span className="text-muted-foreground">{outcome}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-center">
+          <Link to={`/register?event=${event.id}`}>
+            <Button size="lg" className="gap-2 px-8">
+              Register for This Event
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Sparkles, Users, Trophy } from "lucide-react";
+import { ArrowRight, Lightbulb, Users, Rocket, BookOpen, Trophy, Code } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
 
 const Home = () => {
@@ -36,9 +36,9 @@ const Home = () => {
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/coordinators">
+              <Link to="/register">
                 <Button size="lg" variant="outline" className="border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">
-                  Meet Coordinators
+                  Register Now
                 </Button>
               </Link>
             </div>
@@ -46,84 +46,89 @@ const Home = () => {
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-20">
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-4xl text-center">
+          <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">About IEEE Day</h2>
-            <p className="mb-6 text-lg text-muted-foreground">
-              IEEE Day celebrates global collaboration among engineers and technology professionals worldwide.
-              Join us as we bring together innovators, researchers, and students to shape the future of technology.
+            <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
+              IEEE Day celebrates global collaboration among engineers. Join us as we share ideas,
+              innovations, and passion for technology that benefits humanity.
             </p>
-            <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 p-8 text-left shadow-card">
-              <h3 className="mb-3 flex items-center gap-2 text-2xl font-semibold">
-                <Sparkles className="h-6 w-6 text-primary" />
-                Theme 2025
-              </h3>
-              <p className="mb-6 text-xl font-medium text-primary">
-                "Engineering a Smarter Tomorrow"
+          </div>
+
+          <div className="mb-16">
+            <h3 className="mb-8 text-center text-2xl font-bold">Why IEEE Matters</h3>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="hover-lift">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lightbulb className="h-6 w-6 text-primary" />
+                    Innovation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Leading technological advancement through research and development
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="hover-lift">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-6 w-6 text-primary" />
+                    Community
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Connecting 400,000+ members across 160 countries globally
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="hover-lift">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Rocket className="h-6 w-6 text-primary" />
+                    Impact
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Creating solutions that shape the future of technology
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          <Card className="mb-16 bg-gradient-to-br from-primary/5 to-background">
+            <CardHeader>
+              <CardTitle className="text-2xl">About IEEE Student Branch</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg text-muted-foreground">
+                Our IEEE Student Branch fosters innovation through seminars, workshops, and hands-on projects,
+                building a community of future engineers who will shape tomorrow's technology.
               </p>
-              <h3 className="mb-3 flex items-center gap-2 text-2xl font-semibold">
-                <Users className="h-6 w-6 text-primary" />
-                About IEEE Student Branch
-              </h3>
-              <p className="text-muted-foreground">
-                Our IEEE Student Branch encourages innovation and technical growth through seminars, 
-                contests, and hands-on workshops. We provide a platform for students to develop leadership 
-                skills, network with industry professionals, and contribute to cutting-edge technological 
-                advancements.
-              </p>
+            </CardContent>
+          </Card>
+
+          <div>
+            <h3 className="mb-8 text-center text-2xl font-bold">Event Highlights</h3>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="hover-lift"><CardHeader><CardTitle className="flex items-center gap-2"><BookOpen className="h-6 w-6 text-primary" />Workshops</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">Hands-on learning with industry tools</p></CardContent></Card>
+              <Card className="hover-lift"><CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-6 w-6 text-primary" />Competitions</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">Test your skills in circuit design</p></CardContent></Card>
+              <Card className="hover-lift"><CardHeader><CardTitle className="flex items-center gap-2"><Code className="h-6 w-6 text-primary" />Innovation</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">ML integration and emerging tech</p></CardContent></Card>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Quick Stats */}
-      <section className="bg-secondary/50 py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-8 md:grid-cols-3">
-            <Card className="hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-primary" />
-                  3 Events
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Technical workshops and competitions designed to enhance your engineering skills
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-6 w-6 text-primary" />
-                  Expert Mentors
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Learn from industry professionals and experienced faculty members
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                  Certificates
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Earn participation and achievement certificates from IEEE
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+      <section className="bg-gradient-to-br from-primary/10 to-background py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="mb-4 text-3xl font-bold">Join the Celebration</h2>
+          <p className="mb-8 text-lg text-muted-foreground">Be part of IEEE Day 2025</p>
+          <Link to="/register"><Button size="lg" className="gap-2">Register Now<ArrowRight className="h-5 w-5" /></Button></Link>
         </div>
       </section>
     </div>
