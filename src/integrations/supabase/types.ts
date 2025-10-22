@@ -250,6 +250,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
           college_id: string | null
@@ -261,6 +285,8 @@ export type Database = {
           participant_name: string
           participant_phone: string | null
           participant_year: string | null
+          payment_proof_url: string | null
+          payment_status: string | null
           rejection_note: string | null
           status: string
           updated_at: string | null
@@ -278,6 +304,8 @@ export type Database = {
           participant_name: string
           participant_phone?: string | null
           participant_year?: string | null
+          payment_proof_url?: string | null
+          payment_status?: string | null
           rejection_note?: string | null
           status?: string
           updated_at?: string | null
@@ -295,6 +323,8 @@ export type Database = {
           participant_name?: string
           participant_phone?: string | null
           participant_year?: string | null
+          payment_proof_url?: string | null
+          payment_status?: string | null
           rejection_note?: string | null
           status?: string
           updated_at?: string | null
