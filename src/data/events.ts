@@ -6,6 +6,9 @@ import reverseCodingImage from "@/assets/reverse-coding.jpg";
 import mindsphereQuizImage from "@/assets/mindsphere-quiz.jpg";
 import digitalPresenceImage from "@/assets/digital-presence-workshop.jpg";
 import techQuizImage from "@/assets/tech-quiz.jpg";
+import aiArenaImage from "@/assets/ai-arena.jpg";
+import ideathonImage from "@/assets/ideathon.jpg";
+import webcraftImage from "@/assets/webcraft.jpg";
 
 export interface Event {
   id: string;
@@ -344,6 +347,152 @@ export const eventsData: Record<string, Event> = {
       "LinkedIn optimization strategies",
       "Design principles using Canva/Figma",
       "Mathematics and technology quiz rounds"
+    ]
+  },
+  "ai-arena": {
+    id: "ai-arena",
+    title: "AI ARENA",
+    organizer: "IEEE Student Branch",
+    date: "1 November 2025",
+    day: 2,
+    start_time: "09:00",
+    end_time: "16:30",
+    venue: "Alan Turing Block",
+    short_desc: "Competitive Machine Learning challenge with real-world datasets and AI problem-solving.",
+    long_desc: "AI ARENA is a competitive Machine Learning challenge designed to inspire participants to apply artificial intelligence concepts to real-world data. Teams will receive predefined datasets and must develop ML models that achieve the highest accuracy and efficiency. The event promotes analytical thinking, coding skills, and AI problem-solving abilities — a true battle of intelligence, innovation, and performance.",
+    image: aiArenaImage,
+    coordinators: [
+      { name: "S. Sai Suma Sri", phone: "+91 6281659776" },
+      { name: "S. Bhagya Rekha", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "09:00 AM – 09:30 AM", activity: "Registration & Setup" },
+      { time: "09:30 AM – 10:00 AM", activity: "Inauguration & Welcome Address" },
+      { time: "10:00 AM – 10:30 AM", activity: "Dataset & Problem Statement Reveal" },
+      { time: "10:30 AM – 12:45 PM", activity: "Model Building & Training Phase" },
+      { time: "12:45 PM – 01:30 PM", activity: "Lunch Break" },
+      { time: "01:30 PM – 03:30 PM", activity: "Model Finalization & Submission" },
+      { time: "03:30 PM – 04:00 PM", activity: "Evaluation & Leaderboard Results" },
+      { time: "04:00 PM – 04:30 PM", activity: "Prize Distribution & Closing Ceremony" }
+    ],
+    program_outcomes: [
+      "Enhanced analytical thinking and AI problem-solving abilities",
+      "Hands-on experience with machine learning model development",
+      "Practical skills in data analysis and model optimization",
+      "Exposure to competitive AI/ML challenges and real-world datasets"
+    ],
+    rules: [
+      "Teams of 1–2 members",
+      "Each team receives the same dataset and must build a model to achieve maximum accuracy",
+      "Pre-trained models or external datasets are not allowed",
+      "Code must be original and well-documented",
+      "Participants can use Python, Jupyter Notebook, or Google Colab",
+      "Submissions must include: final accuracy score, model explanation, and execution code file"
+    ],
+    criteria: [
+      { name: "Model Accuracy", points: 60 },
+      { name: "Code Efficiency", points: 20 },
+      { name: "Execution Speed", points: 10 },
+      { name: "Approach Explanation", points: 10 }
+    ]
+  },
+  "ideathon": {
+    id: "ideathon",
+    title: "IDEATHON 2025",
+    organizer: "IEEE Student Branch",
+    date: "1 November 2025",
+    day: 2,
+    start_time: "09:00",
+    end_time: "16:00",
+    venue: "AIML Seminar Hall / Open Lab",
+    short_desc: "Creative innovation challenge to present unique ideas that make real-world impact.",
+    long_desc: "IDEATHON 2025 is a creative innovation challenge designed to inspire students to think critically and present unique ideas that can make a real-world impact. Participants will work collaboratively in teams to brainstorm and present their innovative solutions based on predefined themes. The event promotes creativity, innovation, and teamwork with 5 compelling themes: AI for Social Good, Sustainability and Green Innovation, Smart Education Systems, Digital Transformation and Automation, and HealthTech and Wellbeing.",
+    image: ideathonImage,
+    coordinators: [
+      { name: "Coordinator Name", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "09:00 AM – 01:00 PM", activity: "Preparation Time (4 hours)" },
+      { time: "01:00 PM – 02:00 PM", activity: "Lunch Break" },
+      { time: "02:00 PM – 04:00 PM", activity: "Team Presentations (2-3 min each)" },
+      { time: "04:00 PM – 04:30 PM", activity: "Jury Evaluation & Results" },
+      { time: "04:30 PM – 05:00 PM", activity: "Prize Distribution" }
+    ],
+    program_outcomes: [
+      "Enhanced creative thinking and problem-solving abilities",
+      "Improved presentation and communication skills",
+      "Experience in collaborative team-based innovation",
+      "Exposure to real-world problem themes and solution development"
+    ],
+    topics: [
+      "AI for Social Good – Using AI to solve healthcare, education, or environmental problems",
+      "Sustainability and Green Innovation – Eco-friendly practices and waste management",
+      "Smart Education Systems – Technologies to improve learning and accessibility",
+      "Digital Transformation and Automation – Automating processes in industries and daily life",
+      "HealthTech and Wellbeing – Technology solutions for physical and mental health"
+    ],
+    rules: [
+      "Teams of 2–4 members (maximum 4)",
+      "Total of 30 teams maximum",
+      "5 themes provided – participants must choose one theme",
+      "4 hours of preparation time before presentation",
+      "Each team has 2–3 minutes to present their idea",
+      "Registration fee: ₹200 per team (₹150 for IEEE members)"
+    ],
+    criteria: [
+      { name: "Innovation and Originality", points: 25 },
+      { name: "Relevance to Theme", points: 20 },
+      { name: "Practical Feasibility", points: 20 },
+      { name: "Presentation and Communication", points: 20 },
+      { name: "Teamwork and Effort", points: 15 }
+    ]
+  },
+  "webcraft": {
+    id: "webcraft",
+    title: "WEBCRAFT",
+    organizer: "IEEE Student Branch",
+    date: "1 November 2025",
+    day: 2,
+    start_time: "10:00",
+    end_time: "15:00",
+    venue: "Alan Turing Block",
+    short_desc: "Turn ideas into interactive web designs using Figma, HTML, CSS, JavaScript, and Bootstrap.",
+    long_desc: "WEBCRAFT is a web development competition designed to enhance students' creativity and front-end development skills through modern web design and development challenges. Participants will design and build responsive, interactive websites using Figma, HTML, CSS, JavaScript, and Bootstrap. Teams will receive themes at the event start and must create functional, visually appealing websites within the time limit.",
+    image: webcraftImage,
+    coordinators: [
+      { name: "N. Jahnavi", phone: "+91XXXXXXXXXX" },
+      { name: "B. Tejasree", phone: "+91XXXXXXXXXX" }
+    ],
+    schedule: [
+      { time: "10:00 AM – 12:00 PM", activity: "Website Design & Development Phase" },
+      { time: "12:00 PM – 01:00 PM", activity: "Lunch Break" },
+      { time: "01:00 PM – 03:00 PM", activity: "Final Presentations & Project Showcase" }
+    ],
+    program_outcomes: [
+      "Enhanced front-end development skills with modern web technologies",
+      "Improved creativity and UI/UX design abilities",
+      "Practical experience with responsive web design and interactivity",
+      "Strengthened problem-solving and time management under pressure"
+    ],
+    topics: [
+      "Figma design and prototyping",
+      "HTML, CSS, and JavaScript fundamentals",
+      "Bootstrap framework for responsive design",
+      "UI/UX design principles",
+      "Web interactivity and optimization"
+    ],
+    rules: [
+      "Themes will be provided at the event start",
+      "Use Figma, HTML, CSS, JavaScript, and Bootstrap",
+      "Focus on responsiveness, design consistency, and interactivity",
+      "Registration fee: ₹200 per team (₹150 for IEEE members)",
+      "Original work only – plagiarism will lead to disqualification"
+    ],
+    criteria: [
+      { name: "Creativity and Visual Design", points: 30 },
+      { name: "Code Efficiency & Optimization", points: 25 },
+      { name: "Responsiveness and Interactivity", points: 25 },
+      { name: "Execution Time", points: 20 }
     ]
   }
 };
