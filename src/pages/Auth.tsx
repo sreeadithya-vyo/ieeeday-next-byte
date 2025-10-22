@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const { signIn, signUp, user } = useAuth();
@@ -18,6 +20,7 @@ export default function Auth() {
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [requestedRole, setRequestedRole] = useState<string>('');
 
   // Redirect if already logged in
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function Auth() {
       return;
     }
 
-    const { error } = await signUp(signupEmail, signupPassword, signupName);
+    const { error, user } = await signUp(signupEmail, signupPassword, signupName);
     
     if (error) {
       if (error.message.includes('already registered')) {
@@ -72,10 +75,19 @@ export default function Auth() {
         toast.error(error.message || 'Failed to sign up');
       }
     } else {
+      // Store requested role if provided
+      if (requestedRole && user) {
+        await supabase
+          .from('profiles')
+          .update({ requested_role: requestedRole })
+          .eq('id', user.id);
+      }
+      
       toast.success('Account created! Please check your email to verify your account.');
       setSignupName('');
       setSignupEmail('');
       setSignupPassword('');
+      setRequestedRole('');
     }
     setLoading(false);
   };
@@ -159,6 +171,24 @@ export default function Auth() {
                     onChange={(e) => setSignupPassword(e.target.value)}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="requested-role">Apply for Role (Optional)</Label>
+                  <Select value={requestedRole} onValueChange={setRequestedRole}>
+                    <SelectTrigger id="requested-role" className="bg-background">
+                      <SelectValue placeholder="Select a role to apply for" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      <SelectItem value="APS Chair">APS Chair</SelectItem>
+                      <SelectItem value="SPS Chair">SPS Chair</SelectItem>
+                      <SelectItem value="PROCOM Chair">PROCOM Chair</SelectItem>
+                      <SelectItem value="CS Chair">CS Chair</SelectItem>
+                      <SelectItem value="PES Chair">PES Chair</SelectItem>
+                      <SelectItem value="Super Admin">Super Admin</SelectItem>
+                      <SelectItem value="Elite Admin">Elite Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Your role request will be reviewed by administrators</p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -118,6 +118,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          requested_role: string | null
           updated_at: string | null
           year: string | null
         }
@@ -128,6 +129,7 @@ export type Database = {
           id: string
           name: string
           phone?: string | null
+          requested_role?: string | null
           updated_at?: string | null
           year?: string | null
         }
@@ -138,6 +140,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          requested_role?: string | null
           updated_at?: string | null
           year?: string | null
         }
