@@ -26,23 +26,19 @@ export default function Auth() {
   // Redirect if already logged in based on role
   useEffect(() => {
     const checkRoleAndRedirect = async () => {
-      if (user && !loading) {
-        const { data, error } = await supabase
+      if (user) {
+        const { data } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
-          .maybeSingle();
+          .single();
         
-        if (!error && data?.role) {
-          if (data.role === 'elite_master') {
-            navigate('/admin/elite');
-          } else if (data.role === 'super_admin') {
-            navigate('/admin/super');
-          } else if (data.role === 'event_admin') {
-            navigate('/admin/chapter');
-          } else {
-            navigate('/');
-          }
+        if (data?.role === 'elite_master') {
+          navigate('/admin/elite');
+        } else if (data?.role === 'super_admin') {
+          navigate('/admin/super');
+        } else if (data?.role === 'event_admin') {
+          navigate('/admin/chapter');
         } else {
           navigate('/');
         }
@@ -50,7 +46,7 @@ export default function Auth() {
     };
     
     checkRoleAndRedirect();
-  }, [user, loading, navigate]);
+  }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,23 +70,19 @@ export default function Auth() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        const { data, error: roleError } = await supabase
+        const { data } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .single();
         
         // Redirect based on role
-        if (!roleError && data?.role) {
-          if (data.role === 'elite_master') {
-            navigate('/admin/elite');
-          } else if (data.role === 'super_admin') {
-            navigate('/admin/super');
-          } else if (data.role === 'event_admin') {
-            navigate('/admin/chapter');
-          } else {
-            navigate('/');
-          }
+        if (data?.role === 'elite_master') {
+          navigate('/admin/elite');
+        } else if (data?.role === 'super_admin') {
+          navigate('/admin/super');
+        } else if (data?.role === 'event_admin') {
+          navigate('/admin/chapter');
         } else {
           navigate('/');
         }
