@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import EventFormDialog from './EventFormDialog';
 
 interface Event {
   id: string;
@@ -79,8 +80,13 @@ export default function EventsManagement() {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <EventFormDialog onSuccess={fetchData} />
+      </div>
+      
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Event</TableHead>
@@ -128,6 +134,7 @@ export default function EventsManagement() {
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

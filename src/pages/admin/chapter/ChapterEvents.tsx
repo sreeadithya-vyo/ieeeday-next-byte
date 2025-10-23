@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { useRole } from "@/hooks/useRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { useRole } from "@/hooks/useRole";
 import { format } from "date-fns";
+import EventFormDialog from "@/components/admin/EventFormDialog";
 
 interface Event {
   id: string;
@@ -91,9 +92,12 @@ export default function ChapterEvents() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">My Events</h2>
-        <p className="text-muted-foreground">Manage events for {chapter} chapter</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">My Events</h2>
+          <p className="text-muted-foreground">Manage events for {chapter} chapter</p>
+        </div>
+        <EventFormDialog onSuccess={fetchEvents} chapterFilter={chapter || undefined} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
