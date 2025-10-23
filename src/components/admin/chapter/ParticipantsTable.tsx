@@ -18,6 +18,7 @@ interface Registration {
   status: string;
   payment_status: string;
   payment_proof_url: string;
+  transaction_id: string | null;
   created_at: string;
   events: {
     id: string;
@@ -105,6 +106,7 @@ export default function ParticipantsTable({ chapter, eventFilter }: Participants
               <TableHead>Phone</TableHead>
               <TableHead>Event</TableHead>
               <TableHead>Payment Status</TableHead>
+              <TableHead>Transaction ID</TableHead>
               <TableHead>Proof</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -134,6 +136,9 @@ export default function ParticipantsTable({ chapter, eventFilter }: Participants
                   >
                     {reg.payment_status}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  {reg.transaction_id || '-'}
                 </TableCell>
                 <TableCell>
                   {reg.payment_proof_url ? (

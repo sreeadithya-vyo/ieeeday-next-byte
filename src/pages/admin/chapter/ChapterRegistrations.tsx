@@ -20,6 +20,7 @@ interface Registration {
   status: string;
   payment_status: string;
   payment_proof_url: string | null;
+  transaction_id: string | null;
   college_id: string;
   created_at: string;
   events: {
@@ -168,6 +169,7 @@ export default function ChapterRegistrations() {
                   <TableHead>Year</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Payment</TableHead>
+                  <TableHead>Transaction ID</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -188,6 +190,9 @@ export default function ChapterRegistrations() {
                       <Badge variant={reg.payment_status === 'verified' ? 'default' : 'secondary'}>
                         {reg.payment_status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {reg.transaction_id || '-'}
                     </TableCell>
                     <TableCell>
                       {reg.status === 'submitted' && (
