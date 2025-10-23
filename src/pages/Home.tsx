@@ -44,13 +44,16 @@ const Home = () => {
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
             <h1 className="mb-4 text-5xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl">
-              IEEE DAY 2025
+              2025 IEEE DAY CELEBRATIONS
             </h1>
             <h2 className="mb-6 text-2xl font-semibold text-primary-foreground/90 md:text-3xl">
               Innovate. Inspire. Impact.
             </h2>
-            <p className="mb-8 text-lg text-primary-foreground/80 md:text-xl">
-              Engineering a Smarter Tomorrow
+            <p className="mb-6 text-lg text-primary-foreground/80 md:text-xl font-semibold">
+              SASI IEEE STUDENT BRANCH
+            </p>
+            <p className="mb-8 text-base text-primary-foreground/70 md:text-lg">
+              SASI INSTITUTE OF TECHNOLOGY AND ENGINEERING Tadepalligudem
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/events">
