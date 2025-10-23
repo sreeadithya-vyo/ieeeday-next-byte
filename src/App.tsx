@@ -92,7 +92,7 @@ const App = () => (
               } />
               
               {/* Chapter Admin Routes */}
-              <Route path="/admin/chapter" element={
+              <Route path="/admin/chapter/*" element={
                 <ProtectedRoute allowedRoles={['event_admin']}>
                   <ChapterAdminDashboard />
                 </ProtectedRoute>
