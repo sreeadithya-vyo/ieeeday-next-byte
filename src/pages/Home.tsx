@@ -43,7 +43,7 @@ const Home = () => {
         
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
-            <h1 className="mb-4 text-4xl font-bold leading-tight text-primary-foreground md:text-5xl lg:text-6xl">
+            <h1 className="mb-4 text-3xl font-bold leading-tight text-primary-foreground md:text-4xl lg:text-5xl">
               2025 IEEE Day Celebrations
             </h1>
             <h2 className="mb-3 text-xl font-medium leading-relaxed text-white md:text-2xl lg:text-3xl">
