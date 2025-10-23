@@ -43,8 +43,8 @@ const Home = () => {
         
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
-            <h1 className="mb-6 text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
-              The Sasi IEEE Student Branch of Sasi Institute of Technology and Engineering, Tadepalligudem, <span className="text-4xl md:text-5xl lg:text-6xl">Organizes</span> the 2025 IEEE Day Celebrations — Innovate. Inspire. Impact.
+            <h1 className="mb-6 text-2xl font-semibold leading-relaxed text-white md:text-3xl lg:text-4xl">
+              The Sasi IEEE Student Branch of Sasi Institute of Technology and Engineering, Tadepalligudem, <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground">Organizes</span> the 2025 IEEE Day Celebrations — Innovate. Inspire. Impact.
             </h1>
             <div className="flex flex-wrap gap-4">
               <Link to="/events">
