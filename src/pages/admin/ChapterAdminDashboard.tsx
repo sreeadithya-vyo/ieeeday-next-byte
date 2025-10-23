@@ -1,36 +1,165 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, FileText, AlertCircle } from "lucide-react";
+import { Users, Calendar, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function ChapterAdminDashboard() {
   const { chapter } = useRole();
-
-  const stats = [
+  const [stats, setStats] = useState([
     {
       title: "Total Events",
-      value: "6",
+      value: "0",
       icon: Calendar,
       description: "Your chapter events",
     },
     {
       title: "Pending Payments",
-      value: "12",
+      value: "0",
       icon: AlertCircle,
       description: "Awaiting verification",
     },
     {
       title: "Confirmed Participants",
-      value: "65",
+      value: "0",
       icon: Users,
       description: "Registered users",
     },
     {
       title: "Rejected",
-      value: "2",
+      value: "0",
       icon: FileText,
       description: "Declined registrations",
     },
-  ];
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (chapter) {
+      fetchStats();
+    }
+  }, [chapter]);
+
+  const fetchStats = async () => {
+    try {
+      // Get chapter ID
+      const { data: chapterData } = await supabase
+        .from('chapters')
+        .select('id')
+        .eq('code', chapter)
+        .single();
+
+      if (!chapterData) {
+        setLoading(false);
+        return;
+      }
+
+      // Fetch total events for this chapter
+      const { count: eventsCount } = await supabase
+        .from('events')
+        .select('*', { count: 'exact', head: true })
+        .eq('chapter_id', chapterData.id);
+
+      // Get event IDs for this chapter
+      const { data: chapterEvents } = await supabase
+        .from('events')
+        .select('id')
+        .eq('chapter_id', chapterData.id);
+
+      const eventIds = chapterEvents?.map(e => e.id) || [];
+
+      if (eventIds.length > 0) {
+        // Fetch pending payments
+        const { count: pendingCount } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .in('event_id', eventIds)
+          .eq('payment_status', 'pending');
+
+        // Fetch confirmed participants
+        const { count: confirmedCount } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .in('event_id', eventIds)
+          .eq('status', 'approved');
+
+        // Fetch rejected registrations
+        const { count: rejectedCount } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .in('event_id', eventIds)
+          .eq('status', 'rejected');
+
+        setStats([
+          {
+            title: "Total Events",
+            value: String(eventsCount || 0),
+            icon: Calendar,
+            description: "Your chapter events",
+          },
+          {
+            title: "Pending Payments",
+            value: String(pendingCount || 0),
+            icon: AlertCircle,
+            description: "Awaiting verification",
+          },
+          {
+            title: "Confirmed Participants",
+            value: String(confirmedCount || 0),
+            icon: Users,
+            description: "Registered users",
+          },
+          {
+            title: "Rejected",
+            value: String(rejectedCount || 0),
+            icon: FileText,
+            description: "Declined registrations",
+          },
+        ]);
+      } else {
+        setStats([
+          {
+            title: "Total Events",
+            value: "0",
+            icon: Calendar,
+            description: "Your chapter events",
+          },
+          {
+            title: "Pending Payments",
+            value: "0",
+            icon: AlertCircle,
+            description: "Awaiting verification",
+          },
+          {
+            title: "Confirmed Participants",
+            value: "0",
+            icon: Users,
+            description: "Registered users",
+          },
+          {
+            title: "Rejected",
+            value: "0",
+            icon: FileText,
+            description: "Declined registrations",
+          },
+        ]);
+      }
+    } catch (error) {
+      toast.error('Failed to load statistics');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
