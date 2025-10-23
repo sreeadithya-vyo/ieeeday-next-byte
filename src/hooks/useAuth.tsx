@@ -23,21 +23,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<AppRole | null>(null);
   const navigate = useNavigate();
 
-  // Fetch user role
+  // Fetch user role (support multiple roles and pick highest priority)
   const fetchUserRole = async (userId: string) => {
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .single();
-    
-    if (!error && data) {
-      setUserRole(data.role as AppRole);
+      .eq('user_id', userId);
+
+    if (!error && data && data.length > 0) {
+      const roles = (data as { role: AppRole }[]).map(r => r.role);
+      const priority: AppRole[] = ['elite_master', 'super_admin', 'event_admin', 'viewer', 'user'];
+      const topRole = priority.find(r => roles.includes(r)) ?? null;
+      setUserRole(topRole);
     } else {
       setUserRole(null);
     }
   };
-
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
