@@ -117,6 +117,7 @@ export type Database = {
           long_desc: string | null
           organizer: string | null
           program_outcomes: string[] | null
+          registration_amount: number | null
           rules: string[] | null
           schedule: Json | null
           short_desc: string | null
@@ -142,6 +143,7 @@ export type Database = {
           long_desc?: string | null
           organizer?: string | null
           program_outcomes?: string[] | null
+          registration_amount?: number | null
           rules?: string[] | null
           schedule?: Json | null
           short_desc?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           long_desc?: string | null
           organizer?: string | null
           program_outcomes?: string[] | null
+          registration_amount?: number | null
           rules?: string[] | null
           schedule?: Json | null
           short_desc?: string | null
