@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Stepper } from '@/components/ui/stepper';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, CheckCircle2 } from 'lucide-react';
+import phonePeQR from '@/assets/phonepe-qr.png';
 
 export default function Registration() {
   const [searchParams] = useSearchParams();
@@ -287,13 +288,16 @@ export default function Registration() {
                   <h3 className="font-semibold mb-4">Payment QR Code</h3>
                   <div className="bg-white p-4 inline-block rounded-lg">
                     <img 
-                      src="/placeholder.svg" 
-                      alt="Payment QR Code" 
-                      className="w-48 h-48"
+                      src={phonePeQR} 
+                      alt="PhonePe Payment QR Code" 
+                      className="w-64 h-auto max-w-full"
                     />
                   </div>
                   <p className="text-sm text-muted-foreground mt-4">
-                    Scan the QR code to make payment
+                    Scan the QR code using PhonePe to make payment
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Payment to: DASARI PURNA PAVAN KUMAR
                   </p>
                 </div>
 
