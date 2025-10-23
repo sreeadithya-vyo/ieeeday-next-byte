@@ -59,6 +59,18 @@ const Header = () => {
             </Link>
           ))}
           
+          {user && (
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => navigate(userRole === 'elite_master' ? '/admin/elite' : '/admin/dashboard')}
+              className="gap-2"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Button>
+          )}
+          
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -79,15 +91,6 @@ const Header = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {isAdmin && (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate("/admin/dashboard")}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
@@ -130,33 +133,31 @@ const Header = () => {
               </Link>
             ))}
             
+            {user && (
+              <Button
+                className="w-full gap-2"
+                onClick={() => {
+                  navigate(userRole === 'elite_master' ? '/admin/elite' : '/admin/dashboard');
+                  setIsMenuOpen(false);
+                }}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Button>
+            )}
+            
             {user ? (
-              <>
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2"
-                    onClick={() => {
-                      navigate("/admin/dashboard");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    Dashboard
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2"
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
             ) : (
               <Button
                 className="w-full"
