@@ -6,47 +6,46 @@ import heroImage from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
 const Home = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
     const checkRoleAndRedirect = async () => {
       if (user) {
-        const {
-          data
-        } = await supabase.from('user_roles').select('role').eq('user_id', user.id).single();
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
         if (data?.role === 'elite_master') {
-          navigate('/admin/elite', {
-            replace: true
-          });
+          navigate('/admin/elite', { replace: true });
         }
       }
     };
+    
     checkRoleAndRedirect();
   }, [user, navigate]);
-  return <div className="flex min-h-screen flex-col">
+  return (
+    <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <section className="relative min-h-[600px] overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{
-        backgroundImage: `url(${heroImage})`
-      }}>
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ 
+            backgroundImage: `url(${heroImage})`,
+          }}
+        >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/95 to-accent/95" />
         </div>
         
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
-            <h1 className="mb-4 text-5xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl">The Sasi IEEE Student Branch
-Sasi Institute of Technology and Engineering, Tadepalligudem, Organizes the 2025 IEEE Day Celebrations.</h1>
-            <h2 className="mb-6 text-2xl font-semibold text-primary-foreground/90 md:text-3xl">Sasi Institute of Technology and Engineering, Tadepalligudem, Organizes 
-2025 IEEE Day Celebrations  Innovate. Inspire. Impact.</h2>
-            <p className="mb-6 text-lg text-primary-foreground/80 md:text-xl font-semibold">
-              SASI IEEE STUDENT BRANCH
-            </p>
-            <p className="mb-8 text-base text-white md:text-lg">
-              SASI INSTITUTE OF TECHNOLOGY AND ENGINEERING Tadepalligudem
-            </p>
+            <h1 className="mb-6 text-2xl font-semibold leading-relaxed text-white md:text-3xl lg:text-4xl">
+              The Sasi IEEE Student Branch of Sasi Institute of Technology and Engineering, Tadepalligudem, <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground">Organizes</span> the 2025 IEEE Day Celebrations — Innovate. Inspire. Impact.
+            </h1>
             <div className="flex flex-wrap gap-4">
               <Link to="/events">
                 <Button size="lg" className="gap-2 shadow-glow">
@@ -149,6 +148,8 @@ Sasi Institute of Technology and Engineering, Tadepalligudem, Organizes the 2025
           <Link to="/register"><Button size="lg" className="gap-2">Register Now<ArrowRight className="h-5 w-5" /></Button></Link>
         </div>
       </section>
-    </div>;
+    </div>
+  );
 };
+
 export default Home;
