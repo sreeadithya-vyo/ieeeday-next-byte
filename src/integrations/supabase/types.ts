@@ -289,6 +289,7 @@ export type Database = {
           payment_status: string | null
           rejection_note: string | null
           status: string
+          transaction_id: string | null
           updated_at: string | null
           user_id: string | null
           verified_at: string | null
@@ -308,6 +309,7 @@ export type Database = {
           payment_status?: string | null
           rejection_note?: string | null
           status?: string
+          transaction_id?: string | null
           updated_at?: string | null
           user_id?: string | null
           verified_at?: string | null
@@ -327,6 +329,7 @@ export type Database = {
           payment_status?: string | null
           rejection_note?: string | null
           status?: string
+          transaction_id?: string | null
           updated_at?: string | null
           user_id?: string | null
           verified_at?: string | null

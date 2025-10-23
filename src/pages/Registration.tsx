@@ -1,358 +1,387 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/hooks/use-toast";
-import { getEventById, getEventsByDay, getAllEvents, type Event } from "@/data/events";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { Stepper } from '@/components/ui/stepper';
+import { supabase } from '@/integrations/supabase/client';
+import { Upload, CheckCircle2 } from 'lucide-react';
 
-const Registration = () => {
+export default function Registration() {
   const [searchParams] = useSearchParams();
-  const preSelectedEventId = searchParams.get("event");
-
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
-  const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
-  const [isPreSelected, setIsPreSelected] = useState(false);
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [selectedEvent, setSelectedEvent] = useState('');
+  const [availableEvents, setAvailableEvents] = useState<any[]>([]);
+  const [paymentProof, setPaymentProof] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    branch: "",
-    year: "",
-    consent: false
+    name: '',
+    email: '',
+    phone: '',
+    branch: '',
+    year: '',
+    transactionId: '',
+    consent: false,
   });
 
-  const [registeredDays, setRegisteredDays] = useState<Set<number>>(new Set());
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedEvent, setSubmittedEvent] = useState<Event | null>(null);
+  const steps = ['Registration Details', 'Payment', 'Confirmation'];
 
   useEffect(() => {
-    if (preSelectedEventId) {
-      const event = getEventById(preSelectedEventId);
-      if (event) {
-        setSelectedDay(event.day);
-        setSelectedEventId(event.id);
-        setAvailableEvents([event]);
-        setIsPreSelected(true);
+    fetchEvents();
+    const eventId = searchParams.get('event');
+    if (eventId) {
+      setSelectedEvent(eventId);
+    }
+  }, [searchParams]);
+
+  const fetchEvents = async () => {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('day', { ascending: true });
+    
+    if (error) {
+      toast.error('Failed to load events');
+      return;
+    }
+    
+    setAvailableEvents(data || []);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size should be less than 5MB');
+        return;
+      }
+      setPaymentProof(file);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep === 0) {
+      // Validate step 1
+      if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || !selectedEvent) {
+        toast.error('Please fill all required fields');
+        return;
+      }
+      if (!formData.consent) {
+        toast.error('Please accept the terms and conditions');
+        return;
+      }
+    } else if (currentStep === 1) {
+      // Validate step 2
+      if (!paymentProof || !formData.transactionId) {
+        toast.error('Please upload payment proof and enter transaction ID');
+        return;
       }
     }
-  }, [preSelectedEventId]);
-
-  useEffect(() => {
-    if (selectedDay && !isPreSelected) {
-      const events = getEventsByDay(selectedDay);
-      setAvailableEvents(events);
-      setSelectedEventId("");
-    }
-  }, [selectedDay, isPreSelected]);
-
-  const handleDayChange = (day: string) => {
-    const dayNum = parseInt(day);
     
-    if (registeredDays.has(dayNum)) {
-      toast({
-        title: "Already Registered",
-        description: `You have already registered for an event on Day ${dayNum}. You may register for another day.`,
-        variant: "destructive"
-      });
-      return;
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
-
-    setSelectedDay(dayNum);
-    setSelectedEventId("");
-    setIsPreSelected(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
-    if (!selectedDay || !selectedEventId) {
-      toast({
-        title: "Incomplete Selection",
-        description: "Please select both a day and an event.",
-        variant: "destructive"
-      });
-      return;
+  const uploadPaymentProof = async (): Promise<string | null> => {
+    if (!paymentProof) return null;
+
+    const fileExt = paymentProof.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('payment-proofs')
+      .upload(filePath, paymentProof);
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return null;
     }
 
-    if (registeredDays.has(selectedDay)) {
-      toast({
-        title: "Already Registered",
-        description: `You have already registered for an event on Day ${selectedDay}.`,
-        variant: "destructive"
-      });
-      return;
-    }
+    const { data: { publicUrl } } = supabase.storage
+      .from('payment-proofs')
+      .getPublicUrl(filePath);
 
-    if (!formData.consent) {
-      toast({
-        title: "Consent Required",
-        description: "Please accept the terms and conditions to proceed.",
-        variant: "destructive"
-      });
-      return;
-    }
+    return publicUrl;
+  };
 
-    // Simulate registration
-    const event = getEventById(selectedEventId);
-    if (event) {
-      setRegisteredDays(prev => new Set(prev).add(selectedDay));
-      setSubmittedEvent(event);
-      setIsSubmitted(true);
+  const handleSubmit = async () => {
+    setUploading(true);
+    
+    try {
+      // Upload payment proof
+      const paymentProofUrl = await uploadPaymentProof();
       
-      toast({
-        title: "Registration Successful!",
-        description: `You are registered for ${event.title}`,
-      });
+      if (!paymentProofUrl) {
+        toast.error('Failed to upload payment proof');
+        setUploading(false);
+        return;
+      }
+
+      // Create registration
+      const { error } = await supabase
+        .from('registrations')
+        .insert({
+          participant_name: formData.name,
+          participant_email: formData.email,
+          participant_phone: formData.phone,
+          participant_branch: formData.branch,
+          participant_year: formData.year,
+          event_id: selectedEvent,
+          payment_proof_url: paymentProofUrl,
+          transaction_id: formData.transactionId,
+          payment_status: 'pending',
+          status: 'submitted',
+        });
+
+      if (error) {
+        console.error('Registration error:', error);
+        toast.error('Failed to submit registration');
+        setUploading(false);
+        return;
+      }
+
+      setCurrentStep(2);
+      toast.success('Registration submitted successfully!');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('An error occurred during registration');
+    } finally {
+      setUploading(false);
     }
   };
 
-  if (isSubmitted && submittedEvent) {
-    return (
-      <div className="min-h-screen py-16">
-        <div className="container mx-auto max-w-2xl px-4">
-          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <CheckCircle2 className="h-10 w-10 text-primary" />
-              </div>
-              <CardTitle className="text-2xl">Registration Confirmed!</CardTitle>
-              <CardDescription>
-                Thank you for registering for IEEE DAY 2025
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-center">
-              <div className="rounded-lg bg-secondary p-6">
-                <h3 className="mb-2 text-xl font-semibold">{submittedEvent.title}</h3>
-                <p className="text-muted-foreground">
-                  <span className="font-medium">Date:</span> {submittedEvent.date}
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-medium">Time:</span> {submittedEvent.start_time} – {submittedEvent.end_time}
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-medium">Venue:</span> {submittedEvent.venue}
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border p-4">
-                <h4 className="mb-3 font-semibold">For Assistance, Contact:</h4>
-                <div className="space-y-2 text-sm">
-                  {submittedEvent.coordinators.map((coordinator, index) => (
-                    <p key={index} className="text-muted-foreground">
-                      <span className="font-medium">{coordinator.name}</span> – {coordinator.phone}
-                    </p>
-                  ))}
-                </div>
-              </div>
-
-              <Button 
-                onClick={() => {
-                  setIsSubmitted(false);
-                  setFormData({
-                    fullName: "",
-                    email: "",
-                    phone: "",
-                    branch: "",
-                    year: "",
-                    consent: false
-                  });
-                  setSelectedDay(null);
-                  setSelectedEventId("");
-                  setIsPreSelected(false);
-                }}
-                className="mt-6"
-              >
-                Register for Another Event
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  const selectedEventData = availableEvents.find(e => e.id === selectedEvent);
+  const preSelectedEvent = searchParams.get('event') ? selectedEventData : null;
 
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto max-w-3xl px-4">
-        <div className="mb-8 text-center">
-          <h1 className="mb-4 text-4xl font-bold">Event Registration</h1>
-          <p className="text-lg text-muted-foreground">
-            Register for IEEE DAY 2025 Events
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
+      <Card className="w-full max-w-3xl">
+        <CardHeader>
+          <CardTitle>Event Registration</CardTitle>
+          <CardDescription>
+            Complete the registration process in three simple steps
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Stepper steps={steps} currentStep={currentStep} />
+          
+          <div className="mt-8 space-y-6">
+            {currentStep === 0 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {preSelectedEvent && (
+                    <div className="col-span-full bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
+                      <p className="text-sm font-medium text-primary">
+                        Pre-selected Event: {preSelectedEvent.title}
+                      </p>
+                    </div>
+                  )}
 
-        {isPreSelected && selectedEventId && (
-          <div className="mb-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="mt-0.5 h-5 w-5 text-primary" />
-              <div>
-                <p className="font-medium text-primary">Event Pre-selected</p>
-                <p className="text-sm text-muted-foreground">
-                  You've selected this event from the events page. Day {selectedDay} has been automatically selected.
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="branch">Branch *</Label>
+                    <Input
+                      id="branch"
+                      required
+                      value={formData.branch}
+                      onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="year">Year *</Label>
+                    <Select value={formData.year} onValueChange={(value) => setFormData({ ...formData, year: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1st Year</SelectItem>
+                        <SelectItem value="2">2nd Year</SelectItem>
+                        <SelectItem value="3">3rd Year</SelectItem>
+                        <SelectItem value="4">4th Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="col-span-full">
+                    <Label htmlFor="event">Select Event *</Label>
+                    <Select 
+                      value={selectedEvent} 
+                      onValueChange={setSelectedEvent}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an event" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableEvents.map((event) => (
+                          <SelectItem key={event.id} value={event.id}>
+                            Day {event.day} - {event.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="consent" 
+                    checked={formData.consent}
+                    onCheckedChange={(checked) => setFormData({ ...formData, consent: checked as boolean })}
+                  />
+                  <label htmlFor="consent" className="text-sm leading-none">
+                    I consent to the collection and processing of my personal data for this event registration *
+                  </label>
+                </div>
+              </>
+            )}
+
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="bg-muted p-6 rounded-lg text-center">
+                  <h3 className="font-semibold mb-4">Payment QR Code</h3>
+                  <div className="bg-white p-4 inline-block rounded-lg">
+                    <img 
+                      src="/placeholder.svg" 
+                      alt="Payment QR Code" 
+                      className="w-48 h-48"
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Scan the QR code to make payment
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="payment-proof">Upload Payment Screenshot *</Label>
+                  <div className="mt-2">
+                    <label 
+                      htmlFor="payment-proof"
+                      className="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
+                    >
+                      <div className="text-center">
+                        <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {paymentProof ? paymentProof.name : 'Click to upload payment proof'}
+                        </p>
+                      </div>
+                    </label>
+                    <input
+                      id="payment-proof"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="transaction-id">Transaction ID *</Label>
+                  <Input
+                    id="transaction-id"
+                    required
+                    value={formData.transactionId}
+                    onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
+                    placeholder="Enter your transaction ID"
+                  />
+                </div>
+              </div>
+            )}
+
+            {currentStep === 2 && (
+              <div className="text-center py-8">
+                <div className="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="h-10 w-10 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-4">Registration Complete!</h3>
+                <p className="text-muted-foreground mb-6">
+                  Your registration process is completed. Our team will contact you after your payment status is confirmed.
                 </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Registration Form</CardTitle>
-            <CardDescription>
-              Fill in your details to register for the event
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
-                <Input
-                  id="fullName"
-                  required
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="your.email@example.com"
-                  />
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="text-sm font-medium mb-2">What happens next?</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• We'll verify your payment within 24-48 hours</li>
+                    <li>• You'll receive a confirmation email once approved</li>
+                    <li>• Check your email for further event details</li>
+                  </ul>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+91XXXXXXXXXX"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="branch">Branch *</Label>
-                  <Select
-                    required
-                    value={formData.branch}
-                    onValueChange={(value) => setFormData({ ...formData, branch: value })}
-                  >
-                    <SelectTrigger id="branch">
-                      <SelectValue placeholder="Select branch" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cse">Computer Science</SelectItem>
-                      <SelectItem value="ece">Electronics & Communication</SelectItem>
-                      <SelectItem value="eee">Electrical & Electronics</SelectItem>
-                      <SelectItem value="mech">Mechanical</SelectItem>
-                      <SelectItem value="civil">Civil</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="year">Year *</Label>
-                  <Select
-                    required
-                    value={formData.year}
-                    onValueChange={(value) => setFormData({ ...formData, year: value })}
-                  >
-                    <SelectTrigger id="year">
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1st Year</SelectItem>
-                      <SelectItem value="2">2nd Year</SelectItem>
-                      <SelectItem value="3">3rd Year</SelectItem>
-                      <SelectItem value="4">4th Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="day">Select Day *</Label>
-                <Select
-                  required
-                  value={selectedDay?.toString() || ""}
-                  onValueChange={handleDayChange}
-                  disabled={isPreSelected}
+                <Button 
+                  className="mt-6"
+                  onClick={() => navigate('/events')}
                 >
-                  <SelectTrigger id="day">
-                    <SelectValue placeholder="Choose event day" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Day 1 — 31 October 2025</SelectItem>
-                    <SelectItem value="2">Day 2 — 1 November 2025</SelectItem>
-                  </SelectContent>
-                </Select>
+                  Browse More Events
+                </Button>
               </div>
+            )}
 
-              {selectedDay && (
-                <div className="space-y-2">
-                  <Label htmlFor="event">Select Event *</Label>
-                  <Select
-                    required
-                    value={selectedEventId}
-                    onValueChange={setSelectedEventId}
-                    disabled={isPreSelected}
-                  >
-                    <SelectTrigger id="event">
-                      <SelectValue placeholder="Choose your event" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableEvents.map((event) => (
-                        <SelectItem key={event.id} value={event.id}>
-                          {event.title} ({event.start_time} – {event.end_time})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="consent"
-                  checked={formData.consent}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, consent: checked as boolean })
-                  }
-                />
-                <Label htmlFor="consent" className="text-sm leading-relaxed">
-                  I agree to the terms and conditions and consent to receive event updates via email and SMS.
-                </Label>
+            {currentStep < 2 && (
+              <div className="flex justify-between pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={currentStep === 0}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  onClick={currentStep === 1 ? handleSubmit : handleNext}
+                  disabled={uploading}
+                >
+                  {uploading ? 'Submitting...' : currentStep === 1 ? 'Submit Registration' : 'Next'}
+                </Button>
               </div>
-
-              <Button type="submit" className="w-full" size="lg">
-                Submit Registration
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Registration;
+}
