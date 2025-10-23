@@ -46,12 +46,9 @@ const Home = () => {
             <h1 className="mb-4 text-5xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl">
               Welcome to the 2025 IEEE Day Celebrations
             </h1>
-            <p className="mb-6 text-lg text-primary-foreground/80 md:text-xl font-semibold">
-              Organized by the Sasi IEEE Student Branch, Sasi Institute of Technology and Engineering, Tadepalligudem
+            <p className="mb-6 text-lg text-white md:text-xl font-semibold">
+              The Sasi IEEE Student Branch of Sasi Institute of Technology and Engineering, Tadepalligudem, <span className="text-2xl md:text-3xl font-bold">Organizes</span> the 2025 IEEE Day Celebrations — Innovate. Inspire. Impact.
             </p>
-            <h2 className="mb-8 text-2xl font-semibold text-primary-foreground/90 md:text-3xl">
-              Innovate. Inspire. Impact.
-            </h2>
             <div className="flex flex-wrap gap-4">
               <Link to="/events">
                 <Button size="lg" className="gap-2 shadow-glow">
