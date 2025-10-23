@@ -43,9 +43,16 @@ const Home = () => {
         
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
-            <h1 className="mb-6 text-2xl font-semibold leading-relaxed text-white md:text-3xl lg:text-4xl">
-              The Sasi IEEE Student Branch of Sasi Institute of Technology and Engineering, Tadepalligudem, <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground">Organizes</span> the 2025 IEEE Day Celebrations — Innovate. Inspire. Impact.
+            <h1 className="mb-4 text-4xl font-bold leading-tight text-primary-foreground md:text-5xl lg:text-6xl">
+              2025 IEEE Day Celebrations
             </h1>
+            <h2 className="mb-3 text-xl font-medium leading-relaxed text-white md:text-2xl lg:text-3xl">
+              Organized by the Sasi IEEE Student Branch<br />
+              Sasi Institute of Technology and Engineering, Tadepalligudem
+            </h2>
+            <h3 className="mb-8 text-lg font-semibold text-primary-foreground/90 md:text-xl lg:text-2xl">
+              Innovate. Inspire. Impact.
+            </h3>
             <div className="flex flex-wrap gap-4">
               <Link to="/events">
                 <Button size="lg" className="gap-2 shadow-glow">
