@@ -39,27 +39,29 @@ export default function SuperAdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      // Fetch total events
+      // Fetch total events across all chapters
       const { count: eventsCount } = await supabase
         .from('events')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch total registrations
+      // Fetch total registrations across all events
       const { count: registrationsCount } = await supabase
         .from('registrations')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch pending payments
+      // Fetch pending payments across all registrations
       const { count: pendingCount } = await supabase
-        .from('registrations')
+        .from('payments')
         .select('*', { count: 'exact', head: true })
-        .eq('payment_status', 'pending');
+        .eq('status', 'pending');
 
-      // Fetch revenue (count verified payments)
-      const { count: verifiedCount } = await supabase
-        .from('registrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('payment_status', 'verified');
+      // Calculate total revenue from verified payments
+      const { data: verifiedPayments } = await supabase
+        .from('payments')
+        .select('amount')
+        .eq('status', 'verified');
+
+      const totalRevenue = verifiedPayments?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
 
       setStats([
         {
@@ -82,7 +84,7 @@ export default function SuperAdminDashboard() {
         },
         {
           title: "Revenue",
-          value: `₹${(verifiedCount || 0) * 100}`,
+          value: `₹${totalRevenue}`,
           icon: DollarSign,
           description: "Total collected",
         },

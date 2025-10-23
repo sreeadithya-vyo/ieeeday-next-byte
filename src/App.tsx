@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import EliteMasterDashboard from "./pages/admin/elite/EliteMasterDashboard";
 import EliteEvents from "./pages/admin/elite/EliteEvents";
 import EliteRegistrations from "./pages/admin/elite/EliteRegistrations";
+import ElitePayments from "./pages/admin/elite/ElitePayments";
 import EliteChapterAdmins from "./pages/admin/elite/EliteChapterAdmins";
 import EliteSuperAdmins from "./pages/admin/elite/EliteSuperAdmins";
 import EliteRoles from "./pages/admin/elite/EliteRoles";
@@ -56,6 +57,11 @@ const App = () => (
               <Route path="/admin/elite/registrations" element={
                 <ProtectedRoute allowedRoles={['elite_master']}>
                   <EliteRegistrations />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/elite/payments" element={
+                <ProtectedRoute allowedRoles={['elite_master']}>
+                  <ElitePayments />
                 </ProtectedRoute>
               } />
               <Route path="/admin/elite/chapter-admins" element={

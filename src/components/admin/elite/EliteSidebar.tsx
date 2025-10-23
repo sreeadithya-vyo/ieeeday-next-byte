@@ -15,6 +15,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/admin/elite" },
   { icon: Calendar, label: "Events", path: "/admin/elite/events" },
   { icon: FileText, label: "Registrations", path: "/admin/elite/registrations" },
+  { icon: ClipboardList, label: "Payments", path: "/admin/elite/payments" },
   { icon: Users, label: "Chapter Admins", path: "/admin/elite/chapter-admins" },
   { icon: UserCog, label: "Super Admins", path: "/admin/elite/super-admins" },
   { icon: Shield, label: "Role Management", path: "/admin/elite/roles" },

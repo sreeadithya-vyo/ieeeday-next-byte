@@ -26,15 +26,18 @@ interface Event {
 
 export default function EliteMasterDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllEvents();
+    fetchAllData();
   }, []);
 
-  const fetchAllEvents = async () => {
+  const fetchAllData = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch all events across all chapters
+      const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select(`
           id,
@@ -45,10 +48,29 @@ export default function EliteMasterDashboard() {
         `)
         .order('date', { ascending: true });
 
-      if (error) throw error;
-      setEvents(data || []);
+      if (eventsError) throw eventsError;
+      setEvents(eventsData || []);
+
+      // Fetch all registrations
+      const { data: regsData, error: regsError } = await supabase
+        .from('registrations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (regsError) throw regsError;
+      setRegistrations(regsData || []);
+
+      // Fetch all payments
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from('payments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (paymentsError) throw paymentsError;
+      setPayments(paymentsData || []);
+
     } catch (error: any) {
-      toast.error('Failed to load events');
+      toast.error('Failed to load data');
       console.error(error);
     } finally {
       setLoading(false);
