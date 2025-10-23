@@ -21,6 +21,8 @@ import EliteSuperAdmins from "./pages/admin/elite/EliteSuperAdmins";
 import EliteRoles from "./pages/admin/elite/EliteRoles";
 import EliteAuditLogs from "./pages/admin/elite/EliteAuditLogs";
 import EliteReports from "./pages/admin/elite/EliteReports";
+import SuperAdminDashboard from "./pages/admin/SuperAdminDashboard";
+import ChapterAdminDashboard from "./pages/admin/ChapterAdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +81,20 @@ const App = () => (
               <Route path="/admin/elite/reports" element={
                 <ProtectedRoute allowedRoles={['elite_master']}>
                   <EliteReports />
+                </ProtectedRoute>
+              } />
+              
+              {/* Super Admin Routes */}
+              <Route path="/admin/super" element={
+                <ProtectedRoute allowedRoles={['super_admin']}>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* Chapter Admin Routes */}
+              <Route path="/admin/chapter" element={
+                <ProtectedRoute allowedRoles={['event_admin']}>
+                  <ChapterAdminDashboard />
                 </ProtectedRoute>
               } />
               

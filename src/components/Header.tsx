@@ -63,7 +63,17 @@ const Header = () => {
             <Button 
               variant="default" 
               size="sm"
-              onClick={() => navigate(userRole === 'elite_master' ? '/admin/elite' : '/admin/dashboard')}
+              onClick={() => {
+                if (userRole === 'elite_master') {
+                  navigate('/admin/elite');
+                } else if (userRole === 'super_admin') {
+                  navigate('/admin/super');
+                } else if (userRole === 'event_admin') {
+                  navigate('/admin/chapter');
+                } else {
+                  navigate('/');
+                }
+              }}
               className="gap-2"
             >
               <LayoutDashboard className="h-4 w-4" />
@@ -137,7 +147,15 @@ const Header = () => {
               <Button
                 className="w-full gap-2"
                 onClick={() => {
-                  navigate(userRole === 'elite_master' ? '/admin/elite' : '/admin/dashboard');
+                  if (userRole === 'elite_master') {
+                    navigate('/admin/elite');
+                  } else if (userRole === 'super_admin') {
+                    navigate('/admin/super');
+                  } else if (userRole === 'event_admin') {
+                    navigate('/admin/chapter');
+                  } else {
+                    navigate('/');
+                  }
                   setIsMenuOpen(false);
                 }}
               >
