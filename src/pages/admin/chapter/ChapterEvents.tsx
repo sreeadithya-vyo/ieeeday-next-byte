@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useRole } from "@/hooks/useRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -123,10 +124,12 @@ export default function ChapterEvents() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Details
-                </Button>
+                <Link to={`/events/${event.id}`} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

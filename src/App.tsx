@@ -8,6 +8,7 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Registration from "./pages/Registration";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Contact from "./pages/Contact";
@@ -38,6 +39,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/events/:id" element={<EventDetail />} />
               <Route path="/register" element={<Registration />} />
               <Route path="/register/confirmation" element={<RegistrationConfirmation />} />
               <Route path="/contact" element={<Contact />} />
