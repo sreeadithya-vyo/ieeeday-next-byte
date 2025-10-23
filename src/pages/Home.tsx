@@ -52,7 +52,7 @@ const Home = () => {
             <p className="mb-6 text-lg text-primary-foreground/80 md:text-xl font-semibold">
               SASI IEEE STUDENT BRANCH
             </p>
-            <p className="mb-8 text-base text-primary-foreground/70 md:text-lg">
+            <p className="mb-8 text-base text-white md:text-lg">
               SASI INSTITUTE OF TECHNOLOGY AND ENGINEERING Tadepalligudem
             </p>
             <div className="flex flex-wrap gap-4">
