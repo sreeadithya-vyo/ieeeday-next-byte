@@ -12,6 +12,7 @@ import EventDetail from "./pages/EventDetail";
 import Registration from "./pages/Registration";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Contact from "./pages/Contact";
+import Chapters from "./pages/Chapters";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import EliteMasterDashboard from "./pages/admin/elite/EliteMasterDashboard";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/register" element={<Registration />} />
               <Route path="/register/confirmation" element={<RegistrationConfirmation />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/chapters" element={<Chapters />} />
               <Route path="/auth" element={<Auth />} />
               
               {/* Elite Master Routes */}
