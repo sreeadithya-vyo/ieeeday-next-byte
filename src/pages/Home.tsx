@@ -112,11 +112,12 @@ Organizes </h2>
 
           <Card className="mb-16 bg-gradient-to-br from-primary/5 to-background">
             <CardHeader>
-              <CardTitle className="text-2xl">About IEEE Student Branch</CardTitle>
+              <CardTitle className="text-2xl">About Institution</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg text-muted-foreground">The Sasi IEEE Student Branch (STB24684) was established in 2016 at Sasi Institute of Technology and Engineering (SITE), Tadepalligudem, Andhra Pradesh, India, under the IEEE Vizag Bay Section and IEEE India Council. Since its inception, the branch has been dedicated to fostering technical innovation, leadership development, and professional growth among students and faculty members. The SB contains 6 Chapters, with more than 200 IEEE Student Members and 8 Senior Members.
-The branch actively engages students from various engineering disciplines through a vibrant mix of technical workshops, guest lectures, hackathons, project exhibitions, and professional development activities. It provides a dynamic platform for students to explore emerging technologies and connect with the global IEEE community.</p>
+              <p className="text-lg text-muted-foreground">Sasi Institute of Technology & Engineering (SITE) in Tadepalligudem, Andhra Pradesh, is recognized as a premier private engineering college in India. Established in 2002, SITE is accredited by NBA and NAAC (A+), affiliated to JNTUK, and offers a variety of undergraduate, postgraduate, and research programs. Known for its modern infrastructure and expert faculty, SITE fosters technology-driven learning, innovation, and holistic development.
+Enhancing its vibrant academic culture, SITE hosts the Sasi IEEE Student Branch (STB24684), founded in 2016 under the IEEE Vizag Bay Section. The branch promotes technical innovation and professional growth, engaging over 200 student members through workshops, conferences, and collaborative events.
+The IEEE Student Branch connects students to the global IEEE community, supporting skill development and leadership in emerging technologies, and preparing SITE graduates to excel in their engineering careers</p>
             </CardContent>
           </Card>
 
