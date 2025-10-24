@@ -10,12 +10,6 @@ const Contact = () => {
       email: "Ieeedaycelebrations@gmail.com",
     },
     {
-      role: "Student Branch Councilor",
-      name: "Dr. P. Siva Kumar",
-      phone: "+91 8074480076",
-      email: "sivakumarperumal@ieee.org",
-    },
-    {
       role: "Student Coordinator",
       name: "Narayanapurapu Ganesh",
       phone: "+91 9398689925",
@@ -30,6 +24,12 @@ const Contact = () => {
       role: "Website Queries Coordinator",
       name: "Ch. Yogi",
       email: "ramanamurthi.chunduri@sasi.ac.in",
+    },
+    {
+      role: "Student Branch Councilor",
+      name: "Dr. P. Siva Kumar",
+      phone: "+91 8074480076",
+      email: "sivakumarperumal@ieee.org",
     },
   ];
 
