@@ -38,10 +38,8 @@ const Home = () => {
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
             <h1 className="mb-4 text-3xl font-bold leading-tight text-primary-foreground md:text-4xl lg:text-5xl">Sasi IEEE Student Branch</h1>
-            <h2 className="mb-3 text-xl font-medium leading-relaxed text-white text-left md:text-3xl lg:text-2xl">Sasi Institute of Technology and Engineering, Tadepalligudem Organizes 2025 IEEE Day Celebrations</h2>
-            <h3 className="mb-8 text-lg font-semibold text-primary-foreground/90 md:text-xl lg:text-2xl">
-              Innovate. Inspire. Impact.
-            </h3>
+            <h2 className="mb-3 text-xl font-medium leading-relaxed text-white text-left md:text-3xl lg:text-2xl">Sasi Institute of Technology and Engineering, Tadepalligudem Organizes </h2>
+            <h3 className="mb-8 text-lg text-primary-foreground/90 md:text-xl lg:text-3xl font-bold">2025 IEEE Day Celebrations</h3>
             <div className="flex flex-wrap gap-4">
               <Link to="/events">
                 <Button size="lg" className="gap-2 shadow-glow">
