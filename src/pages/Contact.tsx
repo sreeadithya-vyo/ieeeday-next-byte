@@ -35,26 +35,21 @@ const Contact = () => {
 
   const contacts = [
     {
-      role: "Faculty Coordinator",
-      name: "Dr. Priya Sharma",
-      phone: "+91 98765 43210",
-      email: "priya.sharma@college.edu",
+      role: "Student Branch Councilor",
+      name: "Dr. P. Siva Kumar",
+      phone: "+91 8074480076",
+      email: "sivakumarperumal@ieee.org",
     },
     {
       role: "Student Coordinator",
-      name: "Rahul Verma",
-      phone: "+91 98765 43212",
-      email: "rahul.verma@student.edu",
+      name: "Narayanapurapu Ganesh",
+      phone: "+91 9398689925",
+      email: "Ieeedaycelebrations@gmail.com",
     },
     {
-      role: "Chair",
-      name: "Vikram Reddy",
-      email: "vikram.reddy@student.edu",
-    },
-    {
-      role: "Secretary",
-      name: "Karthik Menon",
-      email: "karthik.menon@student.edu",
+      role: "Student Coordinator",
+      name: "V. Vyshnavi",
+      email: "Ieeedaycelebrations@gmail.com",
     },
   ];
 
