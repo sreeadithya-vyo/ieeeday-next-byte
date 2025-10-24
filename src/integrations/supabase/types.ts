@@ -389,6 +389,7 @@ export type Database = {
           created_at: string | null
           id: string
           role: string
+          scope: string | null
           user_id: string
         }
         Insert: {
@@ -396,6 +397,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           role: string
+          scope?: string | null
           user_id: string
         }
         Update: {
@@ -403,6 +405,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: string
+          scope?: string | null
           user_id?: string
         }
         Relationships: []
@@ -473,10 +476,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_registration_conflict:
+        | {
+            Args: {
+              p_event_id: string
+              p_participant_email?: string
+              p_participant_phone?: string
+              p_user_id?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_event_id: string
+              p_participant_email?: string
+              p_user_id?: string
+            }
+            Returns: Json
+          }
       get_user_chapter: { Args: { _user_id: string }; Returns: string }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin: { Args: { user_id: string }; Returns: boolean }
       is_any_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
+      normalize_phone: { Args: { "": string }; Returns: string }
+      participant_identifier: {
+        Args: { reg: Database["public"]["Tables"]["registrations"]["Row"] }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
