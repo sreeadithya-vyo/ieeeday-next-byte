@@ -38,10 +38,20 @@ const Footer = () => {
             </a>
           </div>
         </div>
-        <div className="mt-4 flex justify-center gap-4 text-xs text-muted-foreground">
-          <a href="#" className="hover:text-primary">Privacy Policy</a>
-          <span>•</span>
-          <a href="#" className="hover:text-primary">Terms & Conditions</a>
+        <div className="mt-4 flex flex-col items-center gap-2 text-xs text-muted-foreground">
+          <a 
+            href="https://maps.app.goo.gl/DbtjCdRE5hmYSsS46"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary text-center"
+          >
+            Sasi Institute of Technology and Engineering, Tadepalligudem, Andhrapradesh, India, pin 534101
+          </a>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-primary">Privacy Policy</a>
+            <span>•</span>
+            <a href="#" className="hover:text-primary">Terms & Conditions</a>
+          </div>
         </div>
       </div>
     </footer>
