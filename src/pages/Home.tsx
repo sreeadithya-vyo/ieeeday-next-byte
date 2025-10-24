@@ -6,46 +6,38 @@ import heroImage from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
 const Home = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     const checkRoleAndRedirect = async () => {
       if (user) {
-        const { data } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-        
+        const {
+          data
+        } = await supabase.from('user_roles').select('role').eq('user_id', user.id).single();
         if (data?.role === 'elite_master') {
-          navigate('/admin/elite', { replace: true });
+          navigate('/admin/elite', {
+            replace: true
+          });
         }
       }
     };
-    
     checkRoleAndRedirect();
   }, [user, navigate]);
-  return (
-    <div className="flex min-h-screen flex-col">
+  return <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <section className="relative min-h-[600px] overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: `url(${heroImage})`,
-          }}
-        >
+        <div className="absolute inset-0 bg-cover bg-center" style={{
+        backgroundImage: `url(${heroImage})`
+      }}>
           <div className="absolute inset-0 bg-gradient-to-r from-primary/95 to-accent/95" />
         </div>
         
         <div className="container relative mx-auto flex min-h-[600px] items-center px-4">
           <div className="max-w-3xl animate-fade-in">
-            <h1 className="mb-4 text-3xl font-bold leading-tight text-primary-foreground md:text-4xl lg:text-5xl">
-              2025 IEEE Day Celebrations
-            </h1>
+            <h1 className="mb-4 text-3xl font-bold leading-tight text-primary-foreground md:text-4xl lg:text-5xl">Sasi IEEE Student Branch</h1>
             <h2 className="mb-3 text-xl font-medium leading-relaxed text-white md:text-2xl lg:text-3xl">
               Organized by the Sasi IEEE Student Branch<br />
               Sasi Institute of Technology and Engineering, Tadepalligudem
@@ -155,8 +147,6 @@ const Home = () => {
           <Link to="/register"><Button size="lg" className="gap-2">Register Now<ArrowRight className="h-5 w-5" /></Button></Link>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
