@@ -61,9 +61,7 @@ Organizes </h2>
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">About
-About IEEE Student Branch
- IEEE Day</h2>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">About IEEE Student Branch  </h2>
             <p className="mx-auto max-w-3xl text-lg text-muted-foreground">IEEE Day celebrates global collaboration among engineers. Join us as we share ideas, innovations, and passiThe Sasi IEEE Student Branch (STB24684) was established in 2016 at Sasi Institute of Technology and Engineering (SITE), Tadepalligudem, Andhra Pradesh, India, under the IEEE Vizag Bay Section and IEEE India Council. Since its inception, the branch has been dedicated to fostering technical innovation, leadership development, and professional growth among students and faculty members. The SB contains 6 Chapters, with more than 200 IEEE Student Members and 8 Senior Members. The branch actively engages students from various engineering disciplines through a vibrant mix of technical workshops, guest lectures, hackathons, project exhibitions, and professional development activities. It provides a dynamic platform for students to explore emerging technologies and connect with the global IEEE community.on for technology that benefits humanity.</p>
           </div>
 
