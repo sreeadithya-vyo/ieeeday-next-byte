@@ -39,8 +39,7 @@ const Home = () => {
           <div className="max-w-3xl animate-fade-in">
             <h1 className="mb-4 text-3xl font-bold leading-tight text-primary-foreground md:text-4xl lg:text-5xl">Sasi IEEE Student Branch</h1>
             <h2 className="mb-3 text-xl font-medium leading-relaxed text-white md:text-2xl lg:text-3xl">
-              Organized by the Sasi IEEE Student Branch<br />
-              Sasi Institute of Technology and Engineering, Tadepalligudem
+              Sasi Institute of Technology and Engineering, Tapalligudem Organizes 2025 IEEE Day Celebrations
             </h2>
             <h3 className="mb-8 text-lg font-semibold text-primary-foreground/90 md:text-xl lg:text-2xl">
               Innovate. Inspire. Impact.
