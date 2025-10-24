@@ -4,6 +4,8 @@ import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import ieeeLogo from "@/assets/ieee-logo.png";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -38,10 +40,8 @@ const Header = () => {
   return <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <nav className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <span className="text-lg font-bold text-primary-foreground">IEEE</span>
-          </div>
-          <span className="hidden font-semibold sm:inline-block">2025 IEEE DAY Celebrations</span>
+          <img src={ieeeLogo} alt="IEEE Logo" className="h-10 w-10 object-contain" />
+          <span className="hidden font-semibold sm:inline-block">2025 IEEE DAY Celebrations</span>
         </Link>
 
         {/* Desktop Navigation */}
