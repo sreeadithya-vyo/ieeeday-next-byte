@@ -29,6 +29,8 @@ export default function Registration() {
     year: '',
     transactionId: '',
     consent: false,
+    isIeeeMember: false,
+    ieeeMemberId: '',
   });
 
   const steps = ['Registration Details', 'Payment', 'Confirmation'];
@@ -71,6 +73,10 @@ export default function Registration() {
       // Validate step 1
       if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || !selectedEvent) {
         toast.error('Please fill all required fields');
+        return;
+      }
+      if (formData.isIeeeMember && !formData.ieeeMemberId) {
+        toast.error('Please enter your IEEE Member ID');
         return;
       }
       if (!formData.consent) {
@@ -146,6 +152,8 @@ export default function Registration() {
           transaction_id: formData.transactionId,
           payment_status: 'pending',
           status: 'submitted',
+          is_ieee_member: formData.isIeeeMember,
+          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
         });
 
       if (error) {
@@ -267,6 +275,32 @@ export default function Registration() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="ieee-member" 
+                      checked={formData.isIeeeMember}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isIeeeMember: checked as boolean })}
+                    />
+                    <label htmlFor="ieee-member" className="text-sm leading-none font-medium">
+                      I am an IEEE Member
+                    </label>
+                  </div>
+
+                  {formData.isIeeeMember && (
+                    <div>
+                      <Label htmlFor="ieee-id">IEEE Member ID *</Label>
+                      <Input
+                        id="ieee-id"
+                        required
+                        value={formData.ieeeMemberId}
+                        onChange={(e) => setFormData({ ...formData, ieeeMemberId: e.target.value })}
+                        placeholder="Enter your IEEE Member ID"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-start space-x-2">

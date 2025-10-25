@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Eye, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +22,9 @@ interface Registration {
   status: string;
   payment_status: string;
   created_at: string;
+  is_ieee_member: boolean;
+  ieee_member_id: string | null;
+  payment_proof_url: string | null;
   events: {
     title: string;
     chapters: {
@@ -37,6 +40,7 @@ export default function EliteRegistrations() {
   const [selectedRegistration, setSelectedRegistration] = useState<string | null>(null);
   const [filterChapter, setFilterChapter] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [selectedProof, setSelectedProof] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRegistrations();
@@ -186,8 +190,10 @@ export default function EliteRegistrations() {
                       <TableHead>Chapter</TableHead>
                       <TableHead>Branch</TableHead>
                       <TableHead>Year</TableHead>
+                      <TableHead>IEEE Member</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Payment</TableHead>
+                      <TableHead>Payment Proof</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -206,11 +212,45 @@ export default function EliteRegistrations() {
                         </TableCell>
                         <TableCell>{reg.participant_branch}</TableCell>
                         <TableCell>{reg.participant_year}</TableCell>
+                        <TableCell>
+                          {reg.is_ieee_member ? (
+                            <div className="text-sm">
+                              <Badge variant="secondary" className="mb-1">IEEE Member</Badge>
+                              <p className="text-muted-foreground">ID: {reg.ieee_member_id}</p>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">Not IEEE Member</span>
+                          )}
+                        </TableCell>
                         <TableCell>{getStatusBadge(reg.status)}</TableCell>
                         <TableCell>
                           <Badge variant={reg.payment_status === 'verified' ? 'default' : 'secondary'}>
                             {reg.payment_status}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {reg.payment_proof_url && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedProof(reg.payment_proof_url)}>
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View Proof
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-3xl">
+                                <DialogHeader>
+                                  <DialogTitle>Payment Proof</DialogTitle>
+                                </DialogHeader>
+                                <div className="flex justify-center">
+                                  <img 
+                                    src={reg.payment_proof_url} 
+                                    alt="Payment Proof" 
+                                    className="max-w-full h-auto rounded-lg"
+                                  />
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
                         </TableCell>
                         <TableCell>
                           {reg.status === 'submitted' && (

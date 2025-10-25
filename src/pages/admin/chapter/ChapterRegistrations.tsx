@@ -23,6 +23,8 @@ interface Registration {
   transaction_id: string | null;
   college_id: string;
   created_at: string;
+  is_ieee_member: boolean;
+  ieee_member_id: string | null;
   events: {
     title: string;
   };
@@ -34,6 +36,7 @@ export default function ChapterRegistrations() {
   const [loading, setLoading] = useState(true);
   const [rejectionNote, setRejectionNote] = useState("");
   const [selectedRegistration, setSelectedRegistration] = useState<string | null>(null);
+  const [selectedProof, setSelectedProof] = useState<string | null>(null);
 
   useEffect(() => {
     if (chapter) {
@@ -167,9 +170,10 @@ export default function ChapterRegistrations() {
                   <TableHead>Event</TableHead>
                   <TableHead>Branch</TableHead>
                   <TableHead>Year</TableHead>
+                  <TableHead>IEEE Member</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Payment</TableHead>
-                  <TableHead>Transaction ID</TableHead>
+                  <TableHead>Payment Proof</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -185,6 +189,16 @@ export default function ChapterRegistrations() {
                     <TableCell>{reg.events.title}</TableCell>
                     <TableCell>{reg.participant_branch}</TableCell>
                     <TableCell>{reg.participant_year}</TableCell>
+                    <TableCell>
+                      {reg.is_ieee_member ? (
+                        <div className="text-sm">
+                          <Badge variant="secondary" className="mb-1">IEEE Member</Badge>
+                          <p className="text-muted-foreground">ID: {reg.ieee_member_id}</p>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not IEEE Member</span>
+                      )}
+                    </TableCell>
                     <TableCell>{getStatusBadge(reg.status)}</TableCell>
                     <TableCell>
                       <Badge variant={reg.payment_status === 'verified' ? 'default' : 'secondary'}>
@@ -192,7 +206,28 @@ export default function ChapterRegistrations() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {reg.transaction_id || '-'}
+                      {reg.payment_proof_url && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedProof(reg.payment_proof_url)}>
+                              <Eye className="h-4 w-4 mr-1" />
+                              View Proof
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl">
+                            <DialogHeader>
+                              <DialogTitle>Payment Proof</DialogTitle>
+                            </DialogHeader>
+                            <div className="flex justify-center">
+                              <img 
+                                src={reg.payment_proof_url} 
+                                alt="Payment Proof" 
+                                className="max-w-full h-auto rounded-lg"
+                              />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
                     </TableCell>
                     <TableCell>
                       {reg.status === 'submitted' && (

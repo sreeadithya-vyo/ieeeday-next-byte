@@ -20,8 +20,10 @@ interface Payment {
   registrations: {
     participant_name: string;
     participant_email: string;
+    payment_proof_url: string | null;
     events: {
       title: string;
+      registration_amount: number;
     };
   };
 }
@@ -83,7 +85,11 @@ export default function ChapterPayments() {
           registrations (
             participant_name,
             participant_email,
-            events (title)
+            payment_proof_url,
+            events (
+              title,
+              registration_amount
+            )
           )
         `)
         .in('registration_id', registrationIds)
@@ -199,13 +205,13 @@ export default function ChapterPayments() {
                     <TableCell>{getStatusBadge(payment.status)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        {payment.proof_url && (
+                        {payment.proof_url || payment.registrations.payment_proof_url ? (
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setSelectedProof(payment.proof_url)}
+                                onClick={() => setSelectedProof(payment.proof_url || payment.registrations.payment_proof_url)}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 View Proof
@@ -216,13 +222,13 @@ export default function ChapterPayments() {
                                 <DialogTitle>Payment Proof</DialogTitle>
                               </DialogHeader>
                               <img 
-                                src={payment.proof_url} 
+                                src={payment.proof_url || payment.registrations.payment_proof_url!} 
                                 alt="Payment proof" 
                                 className="w-full h-auto rounded-lg"
                               />
                             </DialogContent>
                           </Dialog>
-                        )}
+                        ) : null}
                         {payment.status === 'pending' && (
                           <>
                             <Button
@@ -250,6 +256,33 @@ export default function ChapterPayments() {
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Payment Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="bg-secondary/20 p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground">Total Payments</p>
+              <p className="text-2xl font-bold">{payments.length}</p>
+            </div>
+            <div className="bg-green-500/20 p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground">Verified Amount</p>
+              <p className="text-2xl font-bold">
+                ₹{payments.filter(p => p.status === 'verified').reduce((sum, p) => sum + Number(p.amount), 0)}
+              </p>
+            </div>
+            <div className="bg-yellow-500/20 p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground">Pending Amount</p>
+              <p className="text-2xl font-bold">
+                ₹{payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + Number(p.amount), 0)}
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

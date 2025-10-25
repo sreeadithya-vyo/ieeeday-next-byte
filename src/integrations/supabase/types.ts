@@ -283,6 +283,8 @@ export type Database = {
           created_at: string | null
           event_id: string
           id: string
+          ieee_member_id: string | null
+          is_ieee_member: boolean | null
           participant_branch: string | null
           participant_email: string
           participant_name: string
@@ -303,6 +305,8 @@ export type Database = {
           created_at?: string | null
           event_id: string
           id?: string
+          ieee_member_id?: string | null
+          is_ieee_member?: boolean | null
           participant_branch?: string | null
           participant_email: string
           participant_name: string
@@ -323,6 +327,8 @@ export type Database = {
           created_at?: string | null
           event_id?: string
           id?: string
+          ieee_member_id?: string | null
+          is_ieee_member?: boolean | null
           participant_branch?: string | null
           participant_email?: string
           participant_name?: string
