@@ -21,6 +21,7 @@ interface Registration {
   participant_year: string;
   status: string;
   payment_status: string;
+  transaction_id: string | null;
   created_at: string;
   is_ieee_member: boolean;
   ieee_member_id: string | null;
@@ -191,6 +192,7 @@ export default function EliteRegistrations() {
                       <TableHead>Branch</TableHead>
                       <TableHead>Year</TableHead>
                       <TableHead>IEEE Member</TableHead>
+                      <TableHead>Transaction ID</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Payment</TableHead>
                       <TableHead>Payment Proof</TableHead>
@@ -220,6 +222,13 @@ export default function EliteRegistrations() {
                             </div>
                           ) : (
                             <span className="text-sm text-muted-foreground">Not IEEE Member</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {reg.transaction_id ? (
+                            <span className="font-mono text-sm">{reg.transaction_id}</span>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
                           )}
                         </TableCell>
                         <TableCell>{getStatusBadge(reg.status)}</TableCell>

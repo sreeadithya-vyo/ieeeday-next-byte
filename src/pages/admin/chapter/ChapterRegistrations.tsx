@@ -171,6 +171,7 @@ export default function ChapterRegistrations() {
                   <TableHead>Branch</TableHead>
                   <TableHead>Year</TableHead>
                   <TableHead>IEEE Member</TableHead>
+                  <TableHead>Transaction ID</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead>Payment Proof</TableHead>
@@ -197,6 +198,13 @@ export default function ChapterRegistrations() {
                         </div>
                       ) : (
                         <span className="text-sm text-muted-foreground">Not IEEE Member</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {reg.transaction_id ? (
+                        <span className="font-mono text-sm">{reg.transaction_id}</span>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
                       )}
                     </TableCell>
                     <TableCell>{getStatusBadge(reg.status)}</TableCell>
