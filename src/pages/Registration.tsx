@@ -11,7 +11,6 @@ import { Stepper } from '@/components/ui/stepper';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, CheckCircle2 } from 'lucide-react';
 import phonePeQR from '@/assets/phonepe-qr.png';
-
 export default function Registration() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -20,7 +19,6 @@ export default function Registration() {
   const [availableEvents, setAvailableEvents] = useState<any[]>([]);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,11 +28,9 @@ export default function Registration() {
     transactionId: '',
     consent: false,
     isIeeeMember: false,
-    ieeeMemberId: '',
+    ieeeMemberId: ''
   });
-
   const steps = ['Registration Details', 'Payment', 'Confirmation'];
-
   useEffect(() => {
     fetchEvents();
     const eventId = searchParams.get('event');
@@ -42,21 +38,19 @@ export default function Registration() {
       setSelectedEvents([eventId]);
     }
   }, [searchParams]);
-
   const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .order('day', { ascending: true });
-    
+    const {
+      data,
+      error
+    } = await supabase.from('events').select('*').order('day', {
+      ascending: true
+    });
     if (error) {
       toast.error('Failed to load events');
       return;
     }
-    
     setAvailableEvents(data || []);
   };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -67,7 +61,6 @@ export default function Registration() {
       setPaymentProof(file);
     }
   };
-
   const handleNext = async () => {
     if (currentStep === 0) {
       // Validate step 1
@@ -92,14 +85,14 @@ export default function Registration() {
           for (let j = i + 1; j < selectedEventData.length; j++) {
             const event1 = selectedEventData[i];
             const event2 = selectedEventData[j];
-            
+
             // Check if events are on the same date
             if (event1.date === event2.date) {
               const start1 = event1.start_time || '00:00:00';
               const end1 = event1.end_time || '23:59:59';
               const start2 = event2.start_time || '00:00:00';
               const end2 = event2.end_time || '23:59:59';
-              
+
               // Check time overlap
               if (start1 <= end2 && end1 >= start2) {
                 toast.error(`Selected events "${event1.title}" and "${event2.title}" have overlapping schedules`);
@@ -111,28 +104,30 @@ export default function Registration() {
 
         // Check each selected event for conflicts with existing registrations
         for (const eventId of selectedEvents) {
-          const { data: conflictData, error: conflictError } = await supabase
-            .rpc('check_registration_conflict', {
-              p_event_id: eventId,
-              p_user_id: null, // Guest registration
-              p_participant_email: formData.email,
-              p_participant_phone: formData.phone
-            });
-
+          const {
+            data: conflictData,
+            error: conflictError
+          } = await supabase.rpc('check_registration_conflict', {
+            p_event_id: eventId,
+            p_user_id: null,
+            // Guest registration
+            p_participant_email: formData.email,
+            p_participant_phone: formData.phone
+          });
           if (conflictError) {
             console.error('Conflict check error:', conflictError);
             toast.error('Failed to verify registration eligibility');
             return;
           }
-
-          const conflict = conflictData as { exists_same_event: boolean; exists_overlap: boolean } | null;
+          const conflict = conflictData as {
+            exists_same_event: boolean;
+            exists_overlap: boolean;
+          } | null;
           const eventTitle = availableEvents.find(e => e.id === eventId)?.title || 'Selected event';
-
           if (conflict?.exists_same_event) {
             toast.error(`You have already registered for "${eventTitle}"`);
             return;
           }
-
           if (conflict?.exists_overlap) {
             toast.error(`"${eventTitle}" overlaps with another event you're registered for`);
             return;
@@ -150,48 +145,39 @@ export default function Registration() {
         return;
       }
     }
-    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
-
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
-
   const uploadPaymentProof = async (): Promise<string | null> => {
     if (!paymentProof) return null;
-
     const fileExt = paymentProof.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('payment-proofs')
-      .upload(filePath, paymentProof);
-
+    const {
+      error: uploadError
+    } = await supabase.storage.from('payment-proofs').upload(filePath, paymentProof);
     if (uploadError) {
       console.error('Upload error:', uploadError);
       return null;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('payment-proofs')
-      .getPublicUrl(filePath);
-
+    const {
+      data: {
+        publicUrl
+      }
+    } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
     return publicUrl;
   };
-
   const handleSubmit = async () => {
     setUploading(true);
-    
     try {
       // Upload payment proof
       const paymentProofUrl = await uploadPaymentProof();
-      
       if (!paymentProofUrl) {
         toast.error('Failed to upload payment proof');
         setUploading(false);
@@ -203,7 +189,6 @@ export default function Registration() {
         const event = availableEvents.find(e => e.id === eventId);
         const eventAmount = Number(event?.registration_amount) || 200;
         const finalAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
-        
         return {
           participant_name: formData.name,
           participant_email: formData.email,
@@ -216,21 +201,18 @@ export default function Registration() {
           payment_status: 'pending',
           status: 'submitted',
           is_ieee_member: formData.isIeeeMember,
-          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
+          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null
         };
       });
-
-      const { error } = await supabase
-        .from('registrations')
-        .insert(registrations);
-
+      const {
+        error
+      } = await supabase.from('registrations').insert(registrations);
       if (error) {
         console.error('Registration error:', error);
         toast.error('Failed to submit registration');
         setUploading(false);
         return;
       }
-
       setCurrentStep(2);
       toast.success(`Successfully registered for ${selectedEvents.length} event(s)!`);
     } catch (error) {
@@ -240,16 +222,10 @@ export default function Registration() {
       setUploading(false);
     }
   };
-
   const selectedEventData = availableEvents.filter(e => selectedEvents.includes(e.id));
   const preSelectedEvent = searchParams.get('event') ? selectedEventData[0] : null;
-
   const handleEventToggle = (eventId: string) => {
-    setSelectedEvents(prev => 
-      prev.includes(eventId) 
-        ? prev.filter(id => id !== eventId)
-        : [...prev, eventId]
-    );
+    setSelectedEvents(prev => prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]);
   };
 
   // Calculate total with IEEE discount (₹50 off per event)
@@ -259,15 +235,9 @@ export default function Registration() {
     const discountedAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
     return sum + discountedAmount;
   }, 0);
-
-  const originalAmount = selectedEventData.reduce((sum, event) => 
-    sum + (Number(event.registration_amount) || 200), 0
-  );
-  
+  const originalAmount = selectedEventData.reduce((sum, event) => sum + (Number(event.registration_amount) || 200), 0);
   const totalDiscount = formData.isIeeeMember ? selectedEvents.length * IEEE_DISCOUNT_PER_EVENT : 0;
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
       <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle>Event Registration</CardTitle>
@@ -279,65 +249,55 @@ export default function Registration() {
           <Stepper steps={steps} currentStep={currentStep} />
           
           <div className="mt-8 space-y-6">
-            {currentStep === 0 && (
-              <>
+            {currentStep === 0 && <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {preSelectedEvent && (
-                    <div className="col-span-full bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
+                  {preSelectedEvent && <div className="col-span-full bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
                       <p className="text-sm font-medium text-primary">
                         Pre-selected Event: {preSelectedEvent.title}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         You can select additional events below
                       </p>
-                    </div>
-                  )}
+                    </div>}
 
                   <div>
                     <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
+                    <Input id="name" required value={formData.name} onChange={e => setFormData({
+                  ...formData,
+                  name: e.target.value
+                })} />
                   </div>
 
                   <div>
                     <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
+                    <Input id="email" type="email" required value={formData.email} onChange={e => setFormData({
+                  ...formData,
+                  email: e.target.value
+                })} />
                   </div>
 
                   <div>
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
+                    <Input id="phone" type="tel" required value={formData.phone} onChange={e => setFormData({
+                  ...formData,
+                  phone: e.target.value
+                })} />
                   </div>
 
                   <div>
                     <Label htmlFor="branch">Branch *</Label>
-                    <Input
-                      id="branch"
-                      required
-                      value={formData.branch}
-                      onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                    />
+                    <Input id="branch" required value={formData.branch} onChange={e => setFormData({
+                  ...formData,
+                  branch: e.target.value
+                })} />
                   </div>
 
                   <div>
                     <Label htmlFor="year">Year *</Label>
-                    <Select value={formData.year} onValueChange={(value) => setFormData({ ...formData, year: value })}>
+                    <Select value={formData.year} onValueChange={value => setFormData({
+                  ...formData,
+                  year: value
+                })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Year" />
                       </SelectTrigger>
@@ -353,17 +313,9 @@ export default function Registration() {
                   <div className="col-span-full">
                     <Label>Select Events * (You can select multiple events)</Label>
                     <div className="mt-2 border rounded-lg p-4 max-h-64 overflow-y-auto space-y-3">
-                      {availableEvents.map((event) => (
-                        <div key={event.id} className="flex items-start space-x-3 p-3 rounded-md hover:bg-muted/50 transition-colors">
-                          <Checkbox 
-                            id={`event-${event.id}`}
-                            checked={selectedEvents.includes(event.id)}
-                            onCheckedChange={() => handleEventToggle(event.id)}
-                          />
-                          <label 
-                            htmlFor={`event-${event.id}`} 
-                            className="flex-1 cursor-pointer text-sm"
-                          >
+                      {availableEvents.map(event => <div key={event.id} className="flex items-start space-x-3 p-3 rounded-md hover:bg-muted/50 transition-colors">
+                          <Checkbox id={`event-${event.id}`} checked={selectedEvents.includes(event.id)} onCheckedChange={() => handleEventToggle(event.id)} />
+                          <label htmlFor={`event-${event.id}`} className="flex-1 cursor-pointer text-sm">
                             <div className="font-medium">Day {event.day} - {event.title}</div>
                             <div className="text-xs text-muted-foreground mt-1">
                               {event.date} • {event.start_time || 'TBA'} - {event.end_time || 'TBA'}
@@ -373,73 +325,59 @@ export default function Registration() {
                               ₹{event.registration_amount || 200}
                             </div>
                           </label>
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
-                    {selectedEvents.length > 0 && (
-                      <div className="mt-3 p-3 bg-primary/10 rounded-lg space-y-1">
+                    {selectedEvents.length > 0 && <div className="mt-3 p-3 bg-primary/10 rounded-lg space-y-1">
                         <p className="text-sm font-medium">
                           {selectedEvents.length} event(s) selected
                         </p>
-                        {formData.isIeeeMember && totalDiscount > 0 && (
-                          <>
+                        {formData.isIeeeMember && totalDiscount > 0 && <>
                             <p className="text-xs text-muted-foreground">
                               Original Amount: ₹{originalAmount}
                             </p>
                             <p className="text-xs text-green-600 font-medium">
                               IEEE Discount: -₹{totalDiscount}
                             </p>
-                          </>
-                        )}
+                          </>}
                         <p className="text-sm font-semibold">
                           Total Amount: ₹{totalAmount}
                         </p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </div>
 
                 <div className="space-y-4 border-t pt-4">
                   <div className="flex items-start space-x-2">
-                    <Checkbox 
-                      id="ieee-member" 
-                      checked={formData.isIeeeMember}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isIeeeMember: checked as boolean })}
-                    />
+                    <Checkbox id="ieee-member" checked={formData.isIeeeMember} onCheckedChange={checked => setFormData({
+                  ...formData,
+                  isIeeeMember: checked as boolean
+                })} />
                     <label htmlFor="ieee-member" className="text-sm leading-none font-medium">
                       I am an IEEE Member
                     </label>
                   </div>
 
-                  {formData.isIeeeMember && (
-                    <div>
+                  {formData.isIeeeMember && <div>
                       <Label htmlFor="ieee-id">IEEE Member ID *</Label>
-                      <Input
-                        id="ieee-id"
-                        required
-                        value={formData.ieeeMemberId}
-                        onChange={(e) => setFormData({ ...formData, ieeeMemberId: e.target.value })}
-                        placeholder="Enter your IEEE Member ID"
-                      />
-                    </div>
-                  )}
+                      <Input id="ieee-id" required value={formData.ieeeMemberId} onChange={e => setFormData({
+                  ...formData,
+                  ieeeMemberId: e.target.value
+                })} placeholder="Enter your IEEE Member ID" />
+                    </div>}
                 </div>
 
                 <div className="flex items-start space-x-2">
-                  <Checkbox 
-                    id="consent" 
-                    checked={formData.consent}
-                    onCheckedChange={(checked) => setFormData({ ...formData, consent: checked as boolean })}
-                  />
+                  <Checkbox id="consent" checked={formData.consent} onCheckedChange={checked => setFormData({
+                ...formData,
+                consent: checked as boolean
+              })} />
                   <label htmlFor="consent" className="text-sm leading-none">
                     I consent to the collection and processing of my personal data for this event registration *
                   </label>
                 </div>
-              </>
-            )}
+              </>}
 
-            {currentStep === 1 && (
-              <div className="space-y-6">
+            {currentStep === 1 && <div className="space-y-6">
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
                   <h3 className="font-semibold mb-2">Payment Summary</h3>
                   <div className="space-y-1 text-sm">
@@ -447,8 +385,7 @@ export default function Registration() {
                       <span>Events Selected:</span>
                       <span className="font-medium">{selectedEvents.length}</span>
                     </div>
-                    {formData.isIeeeMember && totalDiscount > 0 && (
-                      <>
+                    {formData.isIeeeMember && totalDiscount > 0 && <>
                         <div className="flex justify-between text-muted-foreground">
                           <span>Original Amount:</span>
                           <span>₹{originalAmount}</span>
@@ -457,8 +394,7 @@ export default function Registration() {
                           <span>IEEE Member Discount:</span>
                           <span>-₹{totalDiscount}</span>
                         </div>
-                      </>
-                    )}
+                      </>}
                     <div className="flex justify-between font-semibold text-base pt-2 border-t">
                       <span>Amount to Pay:</span>
                       <span className="text-primary">₹{totalAmount}</span>
@@ -469,27 +405,18 @@ export default function Registration() {
                 <div className="bg-muted p-6 rounded-lg text-center">
                   <h3 className="font-semibold mb-4">Payment QR Code</h3>
                   <div className="bg-white p-4 inline-block rounded-lg">
-                    <img 
-                      src={phonePeQR} 
-                      alt="PhonePe Payment QR Code" 
-                      className="w-64 h-auto max-w-full"
-                    />
+                    <img src={phonePeQR} alt="PhonePe Payment QR Code" className="w-64 h-auto max-w-full" />
                   </div>
                   <p className="text-sm text-muted-foreground mt-4">
                     Scan the QR code using PhonePe to make payment of ₹{totalAmount}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Payment to: DASARI PURNA PAVAN KUMAR
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">Payment to: Gedela Tejaswini</p>
                 </div>
 
                 <div>
                   <Label htmlFor="payment-proof">Upload Payment Screenshot *</Label>
                   <div className="mt-2">
-                    <label 
-                      htmlFor="payment-proof"
-                      className="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
-                    >
+                    <label htmlFor="payment-proof" className="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors">
                       <div className="text-center">
                         <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
                         <p className="mt-2 text-sm text-muted-foreground">
@@ -497,31 +424,20 @@ export default function Registration() {
                         </p>
                       </div>
                     </label>
-                    <input
-                      id="payment-proof"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFileChange}
-                    />
+                    <input id="payment-proof" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="transaction-id">Transaction ID *</Label>
-                  <Input
-                    id="transaction-id"
-                    required
-                    value={formData.transactionId}
-                    onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
-                    placeholder="Enter your transaction ID"
-                  />
+                  <Input id="transaction-id" required value={formData.transactionId} onChange={e => setFormData({
+                ...formData,
+                transactionId: e.target.value
+              })} placeholder="Enter your transaction ID" />
                 </div>
-              </div>
-            )}
+              </div>}
 
-            {currentStep === 2 && (
-              <div className="text-center py-8">
+            {currentStep === 2 && <div className="text-center py-8">
                 <div className="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                   <CheckCircle2 className="h-10 w-10 text-green-600" />
                 </div>
@@ -537,37 +453,21 @@ export default function Registration() {
                     <li>• Check your email for further event details</li>
                   </ul>
                 </div>
-                <Button 
-                  className="mt-6"
-                  onClick={() => navigate('/events')}
-                >
+                <Button className="mt-6" onClick={() => navigate('/events')}>
                   Browse More Events
                 </Button>
-              </div>
-            )}
+              </div>}
 
-            {currentStep < 2 && (
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={currentStep === 0}
-                >
+            {currentStep < 2 && <div className="flex justify-between pt-4">
+                <Button type="button" variant="outline" onClick={handleBack} disabled={currentStep === 0}>
                   Back
                 </Button>
-                <Button
-                  type="button"
-                  onClick={currentStep === 1 ? handleSubmit : handleNext}
-                  disabled={uploading}
-                >
+                <Button type="button" onClick={currentStep === 1 ? handleSubmit : handleNext} disabled={uploading}>
                   {uploading ? 'Submitting...' : currentStep === 1 ? 'Submit Registration' : 'Next'}
                 </Button>
-              </div>
-            )}
+              </div>}
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
