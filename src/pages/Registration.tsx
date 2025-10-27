@@ -68,7 +68,7 @@ export default function Registration() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 0) {
       // Validate step 1
       if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || !selectedEvent) {
@@ -81,6 +81,39 @@ export default function Registration() {
       }
       if (!formData.consent) {
         toast.error('Please accept the terms and conditions');
+        return;
+      }
+
+      // Check for registration conflicts
+      try {
+        const { data: conflictData, error: conflictError } = await supabase
+          .rpc('check_registration_conflict', {
+            p_event_id: selectedEvent,
+            p_user_id: null, // Guest registration
+            p_participant_email: formData.email,
+            p_participant_phone: formData.phone
+          });
+
+        if (conflictError) {
+          console.error('Conflict check error:', conflictError);
+          toast.error('Failed to verify registration eligibility');
+          return;
+        }
+
+        const conflict = conflictData as { exists_same_event: boolean; exists_overlap: boolean } | null;
+
+        if (conflict?.exists_same_event) {
+          toast.error('You have already registered for this event');
+          return;
+        }
+
+        if (conflict?.exists_overlap) {
+          toast.error('You have another event registration that overlaps with this event schedule');
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking conflicts:', error);
+        toast.error('Failed to verify registration eligibility');
         return;
       }
     } else if (currentStep === 1) {
