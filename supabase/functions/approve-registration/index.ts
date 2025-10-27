@@ -118,7 +118,15 @@ serve(async (req: Request) => {
       const baseAmount = Number(registration.events.registration_amount) || 200;
       const finalAmount = registration.is_ieee_member ? Math.max(baseAmount - IEEE_DISCOUNT, 0) : baseAmount;
 
-      await supabaseClient
+      console.log('Creating payment record:', {
+        registration_id,
+        amount: finalAmount,
+        is_ieee_member: registration.is_ieee_member,
+        base_amount: baseAmount,
+        transaction_id: registration.transaction_id
+      });
+
+      const { data: paymentData, error: paymentError } = await supabaseClient
         .from("payments")
         .insert({
           registration_id: registration_id,
@@ -130,7 +138,15 @@ serve(async (req: Request) => {
           transaction_id: registration.transaction_id,
           proof_url: registration.payment_proof_url,
           currency: "INR",
-        });
+        })
+        .select();
+
+      if (paymentError) {
+        console.error('Error creating payment record:', paymentError);
+        throw new Error(`Failed to create payment record: ${paymentError.message}`);
+      }
+
+      console.log('Payment record created successfully:', paymentData);
     }
 
     // Log audit trail
