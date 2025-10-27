@@ -16,7 +16,7 @@ export default function Registration() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedEvent, setSelectedEvent] = useState('');
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [availableEvents, setAvailableEvents] = useState<any[]>([]);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -39,7 +39,7 @@ export default function Registration() {
     fetchEvents();
     const eventId = searchParams.get('event');
     if (eventId) {
-      setSelectedEvent(eventId);
+      setSelectedEvents([eventId]);
     }
   }, [searchParams]);
 
@@ -71,8 +71,8 @@ export default function Registration() {
   const handleNext = async () => {
     if (currentStep === 0) {
       // Validate step 1
-      if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || !selectedEvent) {
-        toast.error('Please fill all required fields');
+      if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || selectedEvents.length === 0) {
+        toast.error('Please fill all required fields and select at least one event');
         return;
       }
       if (formData.isIeeeMember && !formData.ieeeMemberId) {
@@ -84,32 +84,59 @@ export default function Registration() {
         return;
       }
 
-      // Check for registration conflicts
+      // Check for conflicts across all selected events
       try {
-        const { data: conflictData, error: conflictError } = await supabase
-          .rpc('check_registration_conflict', {
-            p_event_id: selectedEvent,
-            p_user_id: null, // Guest registration
-            p_participant_email: formData.email,
-            p_participant_phone: formData.phone
-          });
-
-        if (conflictError) {
-          console.error('Conflict check error:', conflictError);
-          toast.error('Failed to verify registration eligibility');
-          return;
+        // First check for time conflicts between selected events
+        const selectedEventData = availableEvents.filter(e => selectedEvents.includes(e.id));
+        for (let i = 0; i < selectedEventData.length; i++) {
+          for (let j = i + 1; j < selectedEventData.length; j++) {
+            const event1 = selectedEventData[i];
+            const event2 = selectedEventData[j];
+            
+            // Check if events are on the same date
+            if (event1.date === event2.date) {
+              const start1 = event1.start_time || '00:00:00';
+              const end1 = event1.end_time || '23:59:59';
+              const start2 = event2.start_time || '00:00:00';
+              const end2 = event2.end_time || '23:59:59';
+              
+              // Check time overlap
+              if (start1 <= end2 && end1 >= start2) {
+                toast.error(`Selected events "${event1.title}" and "${event2.title}" have overlapping schedules`);
+                return;
+              }
+            }
+          }
         }
 
-        const conflict = conflictData as { exists_same_event: boolean; exists_overlap: boolean } | null;
+        // Check each selected event for conflicts with existing registrations
+        for (const eventId of selectedEvents) {
+          const { data: conflictData, error: conflictError } = await supabase
+            .rpc('check_registration_conflict', {
+              p_event_id: eventId,
+              p_user_id: null, // Guest registration
+              p_participant_email: formData.email,
+              p_participant_phone: formData.phone
+            });
 
-        if (conflict?.exists_same_event) {
-          toast.error('You have already registered for this event');
-          return;
-        }
+          if (conflictError) {
+            console.error('Conflict check error:', conflictError);
+            toast.error('Failed to verify registration eligibility');
+            return;
+          }
 
-        if (conflict?.exists_overlap) {
-          toast.error('You have another event registration that overlaps with this event schedule');
-          return;
+          const conflict = conflictData as { exists_same_event: boolean; exists_overlap: boolean } | null;
+          const eventTitle = availableEvents.find(e => e.id === eventId)?.title || 'Selected event';
+
+          if (conflict?.exists_same_event) {
+            toast.error(`You have already registered for "${eventTitle}"`);
+            return;
+          }
+
+          if (conflict?.exists_overlap) {
+            toast.error(`"${eventTitle}" overlaps with another event you're registered for`);
+            return;
+          }
         }
       } catch (error) {
         console.error('Error checking conflicts:', error);
@@ -171,23 +198,25 @@ export default function Registration() {
         return;
       }
 
-      // Create registration
+      // Create registrations for all selected events
+      const registrations = selectedEvents.map(eventId => ({
+        participant_name: formData.name,
+        participant_email: formData.email,
+        participant_phone: formData.phone,
+        participant_branch: formData.branch,
+        participant_year: formData.year,
+        event_id: eventId,
+        payment_proof_url: paymentProofUrl,
+        transaction_id: formData.transactionId,
+        payment_status: 'pending',
+        status: 'submitted',
+        is_ieee_member: formData.isIeeeMember,
+        ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
+      }));
+
       const { error } = await supabase
         .from('registrations')
-        .insert({
-          participant_name: formData.name,
-          participant_email: formData.email,
-          participant_phone: formData.phone,
-          participant_branch: formData.branch,
-          participant_year: formData.year,
-          event_id: selectedEvent,
-          payment_proof_url: paymentProofUrl,
-          transaction_id: formData.transactionId,
-          payment_status: 'pending',
-          status: 'submitted',
-          is_ieee_member: formData.isIeeeMember,
-          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
-        });
+        .insert(registrations);
 
       if (error) {
         console.error('Registration error:', error);
@@ -197,7 +226,7 @@ export default function Registration() {
       }
 
       setCurrentStep(2);
-      toast.success('Registration submitted successfully!');
+      toast.success(`Successfully registered for ${selectedEvents.length} event(s)!`);
     } catch (error) {
       console.error('Error:', error);
       toast.error('An error occurred during registration');
@@ -206,8 +235,20 @@ export default function Registration() {
     }
   };
 
-  const selectedEventData = availableEvents.find(e => e.id === selectedEvent);
-  const preSelectedEvent = searchParams.get('event') ? selectedEventData : null;
+  const selectedEventData = availableEvents.filter(e => selectedEvents.includes(e.id));
+  const preSelectedEvent = searchParams.get('event') ? selectedEventData[0] : null;
+
+  const handleEventToggle = (eventId: string) => {
+    setSelectedEvents(prev => 
+      prev.includes(eventId) 
+        ? prev.filter(id => id !== eventId)
+        : [...prev, eventId]
+    );
+  };
+
+  const totalAmount = selectedEventData.reduce((sum, event) => 
+    sum + (Number(event.registration_amount) || 200), 0
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
@@ -229,6 +270,9 @@ export default function Registration() {
                     <div className="col-span-full bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
                       <p className="text-sm font-medium text-primary">
                         Pre-selected Event: {preSelectedEvent.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You can select additional events below
                       </p>
                     </div>
                   )}
@@ -291,22 +335,38 @@ export default function Registration() {
                   </div>
 
                   <div className="col-span-full">
-                    <Label htmlFor="event">Select Event *</Label>
-                    <Select 
-                      value={selectedEvent} 
-                      onValueChange={setSelectedEvent}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an event" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableEvents.map((event) => (
-                          <SelectItem key={event.id} value={event.id}>
-                            Day {event.day} - {event.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>Select Events * (You can select multiple events)</Label>
+                    <div className="mt-2 border rounded-lg p-4 max-h-64 overflow-y-auto space-y-3">
+                      {availableEvents.map((event) => (
+                        <div key={event.id} className="flex items-start space-x-3 p-3 rounded-md hover:bg-muted/50 transition-colors">
+                          <Checkbox 
+                            id={`event-${event.id}`}
+                            checked={selectedEvents.includes(event.id)}
+                            onCheckedChange={() => handleEventToggle(event.id)}
+                          />
+                          <label 
+                            htmlFor={`event-${event.id}`} 
+                            className="flex-1 cursor-pointer text-sm"
+                          >
+                            <div className="font-medium">Day {event.day} - {event.title}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {event.date} • {event.start_time || 'TBA'} - {event.end_time || 'TBA'}
+                              {event.venue && ` • ${event.venue}`}
+                            </div>
+                            <div className="text-xs font-medium text-primary mt-1">
+                              ₹{event.registration_amount || 200}
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedEvents.length > 0 && (
+                      <div className="mt-3 p-3 bg-primary/10 rounded-lg">
+                        <p className="text-sm font-medium">
+                          {selectedEvents.length} event(s) selected • Total: ₹{totalAmount}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
