@@ -66,7 +66,7 @@ serve(async (req: Request) => {
     // Get registration and event details
     const { data: registration, error: regError } = await supabaseClient
       .from("registrations")
-      .select("*, events(title, chapter)")
+      .select("*, events(title, chapter, registration_amount)")
       .eq("id", registration_id)
       .single();
 
@@ -110,6 +110,27 @@ serve(async (req: Request) => {
 
     if (updateError) {
       throw updateError;
+    }
+
+    // Create payment record when verified
+    if (action === "verify") {
+      const IEEE_DISCOUNT = 50;
+      const baseAmount = Number(registration.events.registration_amount) || 200;
+      const finalAmount = registration.is_ieee_member ? Math.max(baseAmount - IEEE_DISCOUNT, 0) : baseAmount;
+
+      await supabaseClient
+        .from("payments")
+        .insert({
+          registration_id: registration_id,
+          amount: finalAmount,
+          method: "phonepe",
+          status: "verified",
+          verified_by: user.id,
+          verified_at: new Date().toISOString(),
+          transaction_id: registration.transaction_id,
+          proof_url: registration.payment_proof_url,
+          currency: "INR",
+        });
     }
 
     // Log audit trail

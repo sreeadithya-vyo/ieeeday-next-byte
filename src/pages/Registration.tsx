@@ -199,20 +199,26 @@ export default function Registration() {
       }
 
       // Create registrations for all selected events
-      const registrations = selectedEvents.map(eventId => ({
-        participant_name: formData.name,
-        participant_email: formData.email,
-        participant_phone: formData.phone,
-        participant_branch: formData.branch,
-        participant_year: formData.year,
-        event_id: eventId,
-        payment_proof_url: paymentProofUrl,
-        transaction_id: formData.transactionId,
-        payment_status: 'pending',
-        status: 'submitted',
-        is_ieee_member: formData.isIeeeMember,
-        ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
-      }));
+      const registrations = selectedEvents.map(eventId => {
+        const event = availableEvents.find(e => e.id === eventId);
+        const eventAmount = Number(event?.registration_amount) || 200;
+        const finalAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
+        
+        return {
+          participant_name: formData.name,
+          participant_email: formData.email,
+          participant_phone: formData.phone,
+          participant_branch: formData.branch,
+          participant_year: formData.year,
+          event_id: eventId,
+          payment_proof_url: paymentProofUrl,
+          transaction_id: formData.transactionId,
+          payment_status: 'pending',
+          status: 'submitted',
+          is_ieee_member: formData.isIeeeMember,
+          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
+        };
+      });
 
       const { error } = await supabase
         .from('registrations')
@@ -246,9 +252,19 @@ export default function Registration() {
     );
   };
 
-  const totalAmount = selectedEventData.reduce((sum, event) => 
+  // Calculate total with IEEE discount (₹50 off per event)
+  const IEEE_DISCOUNT_PER_EVENT = 50;
+  const totalAmount = selectedEventData.reduce((sum, event) => {
+    const eventAmount = Number(event.registration_amount) || 200;
+    const discountedAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
+    return sum + discountedAmount;
+  }, 0);
+
+  const originalAmount = selectedEventData.reduce((sum, event) => 
     sum + (Number(event.registration_amount) || 200), 0
   );
+  
+  const totalDiscount = formData.isIeeeMember ? selectedEvents.length * IEEE_DISCOUNT_PER_EVENT : 0;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
@@ -361,9 +377,22 @@ export default function Registration() {
                       ))}
                     </div>
                     {selectedEvents.length > 0 && (
-                      <div className="mt-3 p-3 bg-primary/10 rounded-lg">
+                      <div className="mt-3 p-3 bg-primary/10 rounded-lg space-y-1">
                         <p className="text-sm font-medium">
-                          {selectedEvents.length} event(s) selected • Total: ₹{totalAmount}
+                          {selectedEvents.length} event(s) selected
+                        </p>
+                        {formData.isIeeeMember && totalDiscount > 0 && (
+                          <>
+                            <p className="text-xs text-muted-foreground">
+                              Original Amount: ₹{originalAmount}
+                            </p>
+                            <p className="text-xs text-green-600 font-medium">
+                              IEEE Discount: -₹{totalDiscount}
+                            </p>
+                          </>
+                        )}
+                        <p className="text-sm font-semibold">
+                          Total Amount: ₹{totalAmount}
                         </p>
                       </div>
                     )}
@@ -411,6 +440,32 @@ export default function Registration() {
 
             {currentStep === 1 && (
               <div className="space-y-6">
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
+                  <h3 className="font-semibold mb-2">Payment Summary</h3>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Events Selected:</span>
+                      <span className="font-medium">{selectedEvents.length}</span>
+                    </div>
+                    {formData.isIeeeMember && totalDiscount > 0 && (
+                      <>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Original Amount:</span>
+                          <span>₹{originalAmount}</span>
+                        </div>
+                        <div className="flex justify-between text-green-600">
+                          <span>IEEE Member Discount:</span>
+                          <span>-₹{totalDiscount}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-between font-semibold text-base pt-2 border-t">
+                      <span>Amount to Pay:</span>
+                      <span className="text-primary">₹{totalAmount}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-muted p-6 rounded-lg text-center">
                   <h3 className="font-semibold mb-4">Payment QR Code</h3>
                   <div className="bg-white p-4 inline-block rounded-lg">
@@ -421,7 +476,7 @@ export default function Registration() {
                     />
                   </div>
                   <p className="text-sm text-muted-foreground mt-4">
-                    Scan the QR code using PhonePe to make payment
+                    Scan the QR code using PhonePe to make payment of ₹{totalAmount}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
                     Payment to: DASARI PURNA PAVAN KUMAR
