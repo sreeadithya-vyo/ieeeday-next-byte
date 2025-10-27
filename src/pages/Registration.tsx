@@ -11,6 +11,7 @@ import { Stepper } from '@/components/ui/stepper';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, CheckCircle2 } from 'lucide-react';
 import phonePeQR from '@/assets/phonepe-qr.png';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 export default function Registration() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -19,6 +20,11 @@ export default function Registration() {
   const [availableEvents, setAvailableEvents] = useState<any[]>([]);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [errorDialog, setErrorDialog] = useState<{ open: boolean; title: string; message: string }>({
+    open: false,
+    title: '',
+    message: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,15 +71,27 @@ export default function Registration() {
     if (currentStep === 0) {
       // Validate step 1
       if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || selectedEvents.length === 0) {
-        toast.error('Please fill all required fields and select at least one event');
+        setErrorDialog({
+          open: true,
+          title: 'Required Fields Missing',
+          message: 'Please fill all required fields and select at least one event to continue.'
+        });
         return;
       }
       if (formData.isIeeeMember && !formData.ieeeMemberId) {
-        toast.error('Please enter your IEEE Member ID');
+        setErrorDialog({
+          open: true,
+          title: 'IEEE Member ID Required',
+          message: 'You have indicated that you are an IEEE member. Please enter your IEEE Member ID to continue.'
+        });
         return;
       }
       if (!formData.consent) {
-        toast.error('Please accept the terms and conditions');
+        setErrorDialog({
+          open: true,
+          title: 'Consent Required',
+          message: 'Please accept the terms and conditions to proceed with your registration.'
+        });
         return;
       }
 
@@ -95,7 +113,11 @@ export default function Registration() {
 
               // Check time overlap
               if (start1 <= end2 && end1 >= start2) {
-                toast.error(`Selected events "${event1.title}" and "${event2.title}" have overlapping schedules`);
+                setErrorDialog({
+                  open: true,
+                  title: 'Schedule Conflict Detected',
+                  message: `The events "${event1.title}" and "${event2.title}" have overlapping schedules. Please select events with different time slots.`
+                });
                 return;
               }
             }
@@ -125,11 +147,19 @@ export default function Registration() {
           } | null;
           const eventTitle = availableEvents.find(e => e.id === eventId)?.title || 'Selected event';
           if (conflict?.exists_same_event) {
-            toast.error(`You have already registered for "${eventTitle}"`);
+            setErrorDialog({
+              open: true,
+              title: 'Duplicate Registration',
+              message: `You have already registered for "${eventTitle}". Each participant can only register once per event.`
+            });
             return;
           }
           if (conflict?.exists_overlap) {
-            toast.error(`"${eventTitle}" overlaps with another event you're registered for`);
+            setErrorDialog({
+              open: true,
+              title: 'Schedule Conflict',
+              message: `"${eventTitle}" overlaps with another event you are already registered for. Please choose events with different time slots.`
+            });
             return;
           }
         }
@@ -141,7 +171,11 @@ export default function Registration() {
     } else if (currentStep === 1) {
       // Validate step 2
       if (!paymentProof || !formData.transactionId) {
-        toast.error('Please upload payment proof and enter transaction ID');
+        setErrorDialog({
+          open: true,
+          title: 'Payment Information Required',
+          message: 'Please upload your payment proof screenshot and enter the transaction ID to complete your registration.'
+        });
         return;
       }
     }
@@ -469,5 +503,21 @@ export default function Registration() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={errorDialog.open} onOpenChange={(open) => setErrorDialog({ ...errorDialog, open })}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl">{errorDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {errorDialog.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorDialog({ ...errorDialog, open: false })}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 }

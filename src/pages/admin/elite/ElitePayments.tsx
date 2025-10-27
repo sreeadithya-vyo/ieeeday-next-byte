@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Eye, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Eye, CheckCircle, XCircle, ZoomIn, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,7 +36,7 @@ export default function ElitePayments() {
   const [loading, setLoading] = useState(true);
   const [filterChapter, setFilterChapter] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [selectedProof, setSelectedProof] = useState<string | null>(null);
+  const [imageZoom, setImageZoom] = useState<number>(100);
 
   useEffect(() => {
     fetchPayments();
@@ -212,7 +212,7 @@ export default function ElitePayments() {
                     <TableCell>
                        <div className="flex gap-2">
                         {payment.proof_url || payment.registrations.payment_proof_url ? (
-                          <Dialog>
+                          <Dialog onOpenChange={(open) => !open && setImageZoom(100)}>
                             <DialogTrigger asChild>
                               <Button
                                 size="sm"
@@ -222,22 +222,42 @@ export default function ElitePayments() {
                                 View Proof
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-3xl">
-                              <DialogHeader>
+                            <DialogContent className="max-w-4xl max-h-[90vh]">
+                              <DialogHeader className="flex-row items-center justify-between space-y-0">
                                 <DialogTitle>Payment Proof</DialogTitle>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setImageZoom(prev => Math.max(50, prev - 25))}
+                                  >
+                                    <ZoomOut className="h-4 w-4" />
+                                  </Button>
+                                  <span className="text-sm font-medium min-w-[60px] text-center">{imageZoom}%</span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setImageZoom(prev => Math.min(200, prev + 25))}
+                                  >
+                                    <ZoomIn className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </DialogHeader>
-                              <img 
-                                src={(payment.proof_url || payment.registrations.payment_proof_url || '').startsWith('http') 
-                                  ? (payment.proof_url || payment.registrations.payment_proof_url!) 
-                                  : supabase.storage.from('payment-proofs').getPublicUrl(payment.proof_url || payment.registrations.payment_proof_url!).data.publicUrl
-                                } 
-                                alt="Payment proof" 
-                                className="w-full h-auto rounded-lg"
-                                onError={(e) => {
-                                  console.error('Failed to load image:', payment.proof_url || payment.registrations.payment_proof_url);
-                                  e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23999"%3EImage not available%3C/text%3E%3C/svg%3E';
-                                }}
-                              />
+                              <div className="overflow-auto max-h-[70vh]">
+                                <img 
+                                  src={(payment.proof_url || payment.registrations.payment_proof_url || '').startsWith('http') 
+                                    ? (payment.proof_url || payment.registrations.payment_proof_url!) 
+                                    : supabase.storage.from('payment-proofs').getPublicUrl(payment.proof_url || payment.registrations.payment_proof_url!).data.publicUrl
+                                  } 
+                                  alt="Payment proof" 
+                                  className="rounded-lg transition-all"
+                                  style={{ width: `${imageZoom}%`, height: 'auto' }}
+                                  onError={(e) => {
+                                    console.error('Failed to load image:', payment.proof_url || payment.registrations.payment_proof_url);
+                                    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23999"%3EImage not available%3C/text%3E%3C/svg%3E';
+                                  }}
+                                />
+                              </div>
                             </DialogContent>
                           </Dialog>
                         ) : null}
