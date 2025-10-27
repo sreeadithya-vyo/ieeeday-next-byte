@@ -206,10 +206,13 @@ export default function ChapterRegistrations() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {reg.payment_proof_url && (
+                      {reg.payment_proof_url ? (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedProof(reg.payment_proof_url)}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                            >
                               <Eye className="h-4 w-4 mr-1" />
                               View Proof
                             </Button>
@@ -218,15 +221,22 @@ export default function ChapterRegistrations() {
                             <DialogHeader>
                               <DialogTitle>Payment Proof</DialogTitle>
                             </DialogHeader>
-                            <div className="flex justify-center">
-                              <img 
-                                src={reg.payment_proof_url} 
-                                alt="Payment Proof" 
-                                className="max-w-full h-auto rounded-lg"
-                              />
-                            </div>
+                            <img 
+                              src={reg.payment_proof_url.startsWith('http') 
+                                ? reg.payment_proof_url 
+                                : supabase.storage.from('payment-proofs').getPublicUrl(reg.payment_proof_url).data.publicUrl
+                              } 
+                              alt="Payment proof" 
+                              className="w-full h-auto rounded-lg"
+                              onError={(e) => {
+                                console.error('Failed to load image:', reg.payment_proof_url);
+                                e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23999"%3EImage not available%3C/text%3E%3C/svg%3E';
+                              }}
+                            />
                           </DialogContent>
                         </Dialog>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">No proof</span>
                       )}
                     </TableCell>
                     <TableCell>

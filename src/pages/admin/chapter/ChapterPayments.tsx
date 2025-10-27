@@ -203,7 +203,7 @@ export default function ChapterPayments() {
                     <TableCell className="font-mono text-sm">{payment.transaction_id}</TableCell>
                     <TableCell>{format(new Date(payment.created_at), 'PP')}</TableCell>
                     <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                    <TableCell>
+                     <TableCell>
                       <div className="flex gap-2">
                         {payment.proof_url || payment.registrations.payment_proof_url ? (
                           <Dialog>
@@ -211,7 +211,6 @@ export default function ChapterPayments() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setSelectedProof(payment.proof_url || payment.registrations.payment_proof_url)}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 View Proof
@@ -222,9 +221,16 @@ export default function ChapterPayments() {
                                 <DialogTitle>Payment Proof</DialogTitle>
                               </DialogHeader>
                               <img 
-                                src={payment.proof_url || payment.registrations.payment_proof_url!} 
+                                src={(payment.proof_url || payment.registrations.payment_proof_url || '').startsWith('http') 
+                                  ? (payment.proof_url || payment.registrations.payment_proof_url!) 
+                                  : supabase.storage.from('payment-proofs').getPublicUrl(payment.proof_url || payment.registrations.payment_proof_url!).data.publicUrl
+                                } 
                                 alt="Payment proof" 
                                 className="w-full h-auto rounded-lg"
+                                onError={(e) => {
+                                  console.error('Failed to load image:', payment.proof_url || payment.registrations.payment_proof_url);
+                                  e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23999"%3EImage not available%3C/text%3E%3C/svg%3E';
+                                }}
                               />
                             </DialogContent>
                           </Dialog>
