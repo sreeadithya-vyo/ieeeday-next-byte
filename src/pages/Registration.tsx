@@ -48,7 +48,7 @@ export default function Registration() {
     const {
       data,
       error
-    } = await supabase.from('events').select('*').order('day', {
+    } = await supabase.from('events').select('*, chapters(code)').order('day', {
       ascending: true
     });
     if (error) {
@@ -218,11 +218,23 @@ export default function Registration() {
         return;
       }
 
+      // Calculate final amounts with SPS combo pricing
+      const selectedEventsData = availableEvents.filter(e => selectedEvents.includes(e.id));
+      const spsEventsInSelection = selectedEventsData.filter(e => e.chapters?.code === 'SPS');
+      const otherEventsInSelection = selectedEventsData.filter(e => e.chapters?.code !== 'SPS');
+      
+      const spsCombo = spsEventsInSelection.length > 0 ? calculateSPSComboPrice(spsEventsInSelection.length) : 0;
+      const spsPerEventPrice = spsEventsInSelection.length > 0 ? spsCombo / spsEventsInSelection.length : 0;
+      
       // Create registrations for all selected events
       const registrations = selectedEvents.map(eventId => {
         const event = availableEvents.find(e => e.id === eventId);
-        const eventAmount = Number(event?.registration_amount) || 200;
+        const isSPSEvent = event?.chapters?.code === 'SPS';
+        
+        // Use combo price for SPS events, regular price for others
+        const eventAmount = isSPSEvent ? spsPerEventPrice : (Number(event?.registration_amount) || 200);
         const finalAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
+        
         return {
           participant_name: formData.name,
           participant_email: formData.email,
@@ -262,15 +274,41 @@ export default function Registration() {
     setSelectedEvents(prev => prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]);
   };
 
-  // Calculate total with IEEE discount (₹50 off per event)
+  // SPS Combo pricing calculation
+  const calculateSPSComboPrice = (spsEventCount: number): number => {
+    if (spsEventCount === 1) return 150;
+    if (spsEventCount === 2) return 250;
+    if (spsEventCount === 3) return 350;
+    return spsEventCount * 150; // Fallback to per-event pricing
+  };
+
+  // Calculate total with SPS combo pricing and IEEE discount
   const IEEE_DISCOUNT_PER_EVENT = 50;
-  const totalAmount = selectedEventData.reduce((sum, event) => {
-    const eventAmount = Number(event.registration_amount) || 200;
-    const discountedAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
-    return sum + discountedAmount;
+  
+  // Separate SPS events from other events
+  const spsEvents = selectedEventData.filter(e => e.chapters?.code === 'SPS');
+  const otherEvents = selectedEventData.filter(e => e.chapters?.code !== 'SPS');
+  
+  // Calculate SPS combo price
+  const spsComboPrice = spsEvents.length > 0 ? calculateSPSComboPrice(spsEvents.length) : 0;
+  
+  // Calculate other events price
+  const otherEventsPrice = otherEvents.reduce((sum, event) => {
+    return sum + (Number(event.registration_amount) || 200);
   }, 0);
+  
+  // Calculate base amount before IEEE discount
+  const baseAmount = spsComboPrice + otherEventsPrice;
+  
+  // Apply IEEE discount
+  const totalAmount = formData.isIeeeMember ? Math.max(baseAmount - (selectedEvents.length * IEEE_DISCOUNT_PER_EVENT), 0) : baseAmount;
+  
+  // Calculate original amount (without combo or discounts)
   const originalAmount = selectedEventData.reduce((sum, event) => sum + (Number(event.registration_amount) || 200), 0);
-  const totalDiscount = formData.isIeeeMember ? selectedEvents.length * IEEE_DISCOUNT_PER_EVENT : 0;
+  
+  // Calculate total discount (combo savings + IEEE discount)
+  const comboSavings = spsEvents.length > 0 ? (spsEvents.reduce((sum, e) => sum + (Number(e.registration_amount) || 150), 0) - spsComboPrice) : 0;
+  const totalDiscount = comboSavings + (formData.isIeeeMember ? selectedEvents.length * IEEE_DISCOUNT_PER_EVENT : 0);
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
       <Card className="w-full max-w-3xl">
         <CardHeader>
@@ -365,12 +403,18 @@ export default function Registration() {
                         <p className="text-sm font-medium">
                           {selectedEvents.length} event(s) selected
                         </p>
-                        {formData.isIeeeMember && totalDiscount > 0 && <>
+                        {(comboSavings > 0 || (formData.isIeeeMember && totalDiscount > 0)) && <>
                             <p className="text-xs text-muted-foreground">
                               Original Amount: ₹{originalAmount}
                             </p>
-                            <p className="text-xs text-green-600 font-medium">
-                              IEEE Discount: -₹{totalDiscount}
+                            {comboSavings > 0 && <p className="text-xs text-blue-600 font-medium">
+                              SPS Combo Savings: -₹{comboSavings.toFixed(0)}
+                            </p>}
+                            {formData.isIeeeMember && <p className="text-xs text-green-600 font-medium">
+                              IEEE Discount: -₹{selectedEvents.length * IEEE_DISCOUNT_PER_EVENT}
+                            </p>}
+                            <p className="text-xs font-medium text-green-600">
+                              Total Savings: -₹{totalDiscount.toFixed(0)}
                             </p>
                           </>}
                         <p className="text-sm font-semibold">
@@ -419,15 +463,23 @@ export default function Registration() {
                       <span>Events Selected:</span>
                       <span className="font-medium">{selectedEvents.length}</span>
                     </div>
-                    {formData.isIeeeMember && totalDiscount > 0 && <>
+                    {(comboSavings > 0 || (formData.isIeeeMember && totalDiscount > 0)) && <>
                         <div className="flex justify-between text-muted-foreground">
                           <span>Original Amount:</span>
                           <span>₹{originalAmount}</span>
                         </div>
-                        <div className="flex justify-between text-green-600">
+                        {comboSavings > 0 && <div className="flex justify-between text-blue-600">
+                          <span>SPS Combo Savings:</span>
+                          <span>-₹{comboSavings.toFixed(0)}</span>
+                        </div>}
+                        {formData.isIeeeMember && <div className="flex justify-between text-green-600">
                           <span>IEEE Member Discount:</span>
-                          <span>-₹{totalDiscount}</span>
-                        </div>
+                          <span>-₹{selectedEvents.length * IEEE_DISCOUNT_PER_EVENT}</span>
+                        </div>}
+                        {totalDiscount > 0 && <div className="flex justify-between text-green-600 font-medium">
+                          <span>Total Savings:</span>
+                          <span>-₹{totalDiscount.toFixed(0)}</span>
+                        </div>}
                       </>}
                     <div className="flex justify-between font-semibold text-base pt-2 border-t">
                       <span>Amount to Pay:</span>
