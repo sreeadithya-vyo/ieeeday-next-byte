@@ -231,9 +231,9 @@ export default function Registration() {
         const event = availableEvents.find(e => e.id === eventId);
         const isSPSEvent = event?.chapters?.code === 'SPS';
         
-        // Use combo price for SPS events, regular price for others
+        // Use combo price for SPS events (no IEEE discount), regular price with IEEE discount for others
         const eventAmount = isSPSEvent ? spsPerEventPrice : (Number(event?.registration_amount) || 200);
-        const finalAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
+        const finalAmount = isSPSEvent ? eventAmount : (formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount);
         
         return {
           participant_name: formData.name,
@@ -282,33 +282,33 @@ export default function Registration() {
     return spsEventCount * 150; // Fallback to per-event pricing
   };
 
-  // Calculate total with SPS combo pricing and IEEE discount
+  // Calculate total with SPS combo pricing and IEEE discount (only for non-SPS events)
   const IEEE_DISCOUNT_PER_EVENT = 50;
   
   // Separate SPS events from other events
   const spsEvents = selectedEventData.filter(e => e.chapters?.code === 'SPS');
   const otherEvents = selectedEventData.filter(e => e.chapters?.code !== 'SPS');
   
-  // Calculate SPS combo price
+  // Calculate SPS combo price (no IEEE discount for SPS)
   const spsComboPrice = spsEvents.length > 0 ? calculateSPSComboPrice(spsEvents.length) : 0;
   
-  // Calculate other events price
+  // Calculate other events price with IEEE discount
   const otherEventsPrice = otherEvents.reduce((sum, event) => {
-    return sum + (Number(event.registration_amount) || 200);
+    const eventAmount = Number(event.registration_amount) || 200;
+    const discountedAmount = formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount;
+    return sum + discountedAmount;
   }, 0);
   
-  // Calculate base amount before IEEE discount
-  const baseAmount = spsComboPrice + otherEventsPrice;
-  
-  // Apply IEEE discount
-  const totalAmount = formData.isIeeeMember ? Math.max(baseAmount - (selectedEvents.length * IEEE_DISCOUNT_PER_EVENT), 0) : baseAmount;
+  // Total amount
+  const totalAmount = spsComboPrice + otherEventsPrice;
   
   // Calculate original amount (without combo or discounts)
   const originalAmount = selectedEventData.reduce((sum, event) => sum + (Number(event.registration_amount) || 200), 0);
   
-  // Calculate total discount (combo savings + IEEE discount)
+  // Calculate total discount (combo savings + IEEE discount for non-SPS events only)
   const comboSavings = spsEvents.length > 0 ? (spsEvents.reduce((sum, e) => sum + (Number(e.registration_amount) || 150), 0) - spsComboPrice) : 0;
-  const totalDiscount = comboSavings + (formData.isIeeeMember ? selectedEvents.length * IEEE_DISCOUNT_PER_EVENT : 0);
+  const ieeeDiscount = formData.isIeeeMember ? otherEvents.length * IEEE_DISCOUNT_PER_EVENT : 0;
+  const totalDiscount = comboSavings + ieeeDiscount;
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
       <Card className="w-full max-w-3xl">
         <CardHeader>
@@ -403,15 +403,15 @@ export default function Registration() {
                         <p className="text-sm font-medium">
                           {selectedEvents.length} event(s) selected
                         </p>
-                        {(comboSavings > 0 || (formData.isIeeeMember && totalDiscount > 0)) && <>
+                        {(comboSavings > 0 || (formData.isIeeeMember && ieeeDiscount > 0)) && <>
                             <p className="text-xs text-muted-foreground">
                               Original Amount: ₹{originalAmount}
                             </p>
                             {comboSavings > 0 && <p className="text-xs text-blue-600 font-medium">
                               SPS Combo Savings: -₹{comboSavings.toFixed(0)}
                             </p>}
-                            {formData.isIeeeMember && <p className="text-xs text-green-600 font-medium">
-                              IEEE Discount: -₹{selectedEvents.length * IEEE_DISCOUNT_PER_EVENT}
+                            {formData.isIeeeMember && ieeeDiscount > 0 && <p className="text-xs text-green-600 font-medium">
+                              IEEE Discount (non-SPS events): -₹{ieeeDiscount}
                             </p>}
                             <p className="text-xs font-medium text-green-600">
                               Total Savings: -₹{totalDiscount.toFixed(0)}
@@ -463,7 +463,7 @@ export default function Registration() {
                       <span>Events Selected:</span>
                       <span className="font-medium">{selectedEvents.length}</span>
                     </div>
-                    {(comboSavings > 0 || (formData.isIeeeMember && totalDiscount > 0)) && <>
+                    {(comboSavings > 0 || (formData.isIeeeMember && ieeeDiscount > 0)) && <>
                         <div className="flex justify-between text-muted-foreground">
                           <span>Original Amount:</span>
                           <span>₹{originalAmount}</span>
@@ -472,9 +472,9 @@ export default function Registration() {
                           <span>SPS Combo Savings:</span>
                           <span>-₹{comboSavings.toFixed(0)}</span>
                         </div>}
-                        {formData.isIeeeMember && <div className="flex justify-between text-green-600">
-                          <span>IEEE Member Discount:</span>
-                          <span>-₹{selectedEvents.length * IEEE_DISCOUNT_PER_EVENT}</span>
+                        {formData.isIeeeMember && ieeeDiscount > 0 && <div className="flex justify-between text-green-600">
+                          <span>IEEE Discount (non-SPS):</span>
+                          <span>-₹{ieeeDiscount}</span>
                         </div>}
                         {totalDiscount > 0 && <div className="flex justify-between text-green-600 font-medium">
                           <span>Total Savings:</span>
