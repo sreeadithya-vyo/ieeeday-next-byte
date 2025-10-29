@@ -29,6 +29,7 @@ interface EventDetail {
   program_outcomes: string[] | null;
   schedule: any;
   chapter: { name: string; code: string } | null;
+  prizes?: Array<{ position: string; amount: number }> | null;
 }
 
 const EventDetail = () => {
@@ -260,6 +261,25 @@ const EventDetail = () => {
                       <li key={idx}>{rule}</li>
                     ))}
                   </ol>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Prizes */}
+            {event.prizes && event.prizes.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Prizes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {event.prizes.map((prize, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/20">
+                        <span className="font-medium text-lg">{prize.position}</span>
+                        <span className="text-2xl font-bold text-primary">₹{prize.amount}</span>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}
