@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Stepper } from '@/components/ui/stepper';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, CheckCircle2, Download, Users } from 'lucide-react';
+import { Upload, CheckCircle2, Download, Users, Plus, X } from 'lucide-react';
 import phonePeQR from '@/assets/phonepe-qr.png';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { getAllEvents, Event } from '@/data/events';
@@ -38,6 +38,7 @@ export default function Registration() {
     ieeeMemberId: '',
     teamMembers: {} as Record<string, Array<{ name: string; email: string; phone: string }>>
   });
+  const [teamMemberCounts, setTeamMemberCounts] = useState<Record<string, number>>({});
   const steps = ['Registration Details', 'Payment', 'Confirmation'];
   useEffect(() => {
     fetchEvents();
@@ -309,6 +310,32 @@ export default function Registration() {
       .filter(event => event && event.team_size);
   };
 
+  // Add team member for an event
+  const addTeamMember = (eventId: string, maxSize: number) => {
+    const currentCount = teamMemberCounts[eventId] || 0;
+    if (currentCount < maxSize - 1) {
+      setTeamMemberCounts(prev => ({
+        ...prev,
+        [eventId]: currentCount + 1
+      }));
+    }
+  };
+
+  // Remove team member for an event
+  const removeTeamMember = (eventId: string, memberIndex: number) => {
+    setFormData(prev => {
+      const teamMembers = { ...prev.teamMembers };
+      if (teamMembers[eventId]) {
+        teamMembers[eventId] = teamMembers[eventId].filter((_, idx) => idx !== memberIndex);
+      }
+      return { ...prev, teamMembers };
+    });
+    setTeamMemberCounts(prev => ({
+      ...prev,
+      [eventId]: Math.max(0, (prev[eventId] || 0) - 1)
+    }));
+  };
+
   // SPS Combo pricing calculation
   const calculateSPSComboPrice = (spsEventCount: number): number => {
     if (spsEventCount === 1) return 150;
@@ -470,6 +497,7 @@ export default function Registration() {
                         if (!event) return null;
                         const maxTeamSize = event.team_size!.max;
                         const currentMembers = formData.teamMembers[event.id] || [];
+                        const memberCount = teamMemberCounts[event.id] || 0;
                         
                         return (
                           <div key={event.id} className="space-y-3 p-4 bg-muted/50 rounded-lg">
@@ -501,9 +529,20 @@ export default function Registration() {
                               You are the team leader. Add {event.team_size!.min === 1 ? 'up to' : 'additional'} {maxTeamSize - 1} team member(s) below.
                             </div>
 
-                            {Array.from({ length: maxTeamSize - 1 }).map((_, idx) => (
+                            {Array.from({ length: memberCount }).map((_, idx) => (
                               <div key={idx} className="space-y-2 p-3 bg-background rounded border">
-                                <p className="text-sm font-medium">Team Member {idx + 1}</p>
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-medium">Team Member {idx + 1}</p>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeTeamMember(event.id, idx)}
+                                    className="h-7 w-7 p-0"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                   <div>
                                     <Label htmlFor={`team-${event.id}-${idx}-name`} className="text-xs">Name</Label>
@@ -540,6 +579,19 @@ export default function Registration() {
                                 </div>
                               </div>
                             ))}
+
+                            {memberCount < maxTeamSize - 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addTeamMember(event.id, maxTeamSize)}
+                                className="w-full"
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Team Member
+                              </Button>
+                            )}
                           </div>
                         );
                       })}
