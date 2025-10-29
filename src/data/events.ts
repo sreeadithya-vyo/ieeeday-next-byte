@@ -1,5 +1,5 @@
 import mlAntennaImage from "@/assets/ml-antenna.jpg";
-import pptContestImage from "@/assets/ppt-contest.jpg";
+import pptContestImageNew from "@/assets/ppt-contest.jpg";
 import circuitManiaImage from "@/assets/circuit-mania.jpg";
 import escapeRoomImage from "@/assets/escape-room.jpg";
 import reverseCodingImage from "@/assets/reverse-coding.jpg";
@@ -9,6 +9,8 @@ import techQuizImage from "@/assets/tech-quiz.jpg";
 import aiArenaImage from "@/assets/ai-arena.jpg";
 import ideathonImage from "@/assets/ideathon.jpg";
 import webcraftImage from "@/assets/webcraft.jpg";
+
+const pptContestImage = pptContestImageNew;
 
 export interface Event {
   id: string;
@@ -43,6 +45,15 @@ export interface Event {
     name: string;
     points: number;
   }>;
+  team_size?: {
+    min: number;
+    max: number;
+  };
+  prizes?: Array<{
+    position: string;
+    amount: number;
+  }>;
+  template_url?: string;
 }
 
 export const eventsData: Record<string, Event> = {
@@ -361,6 +372,7 @@ export const eventsData: Record<string, Event> = {
     short_desc: "Competitive Machine Learning challenge with real-world datasets and AI problem-solving.",
     long_desc: "AI ARENA is a competitive Machine Learning challenge designed to inspire participants to apply artificial intelligence concepts to real-world data. Teams will receive predefined datasets and must develop ML models that achieve the highest accuracy and efficiency. The event promotes analytical thinking, coding skills, and AI problem-solving abilities — a true battle of intelligence, innovation, and performance.",
     image: aiArenaImage,
+    team_size: { min: 1, max: 2 },
     coordinators: [
       { name: "S. Sai Suma Sri", phone: "+91 6281659776" },
       { name: "S. Bhagya Rekha", phone: "+91XXXXXXXXXX" }
@@ -408,6 +420,12 @@ export const eventsData: Record<string, Event> = {
     short_desc: "Creative innovation challenge to present unique ideas that make real-world impact.",
     long_desc: "IDEATHON 2025 is a creative innovation challenge designed to inspire students to think critically and present unique ideas that can make a real-world impact. Participants will work collaboratively in teams to brainstorm and present their innovative solutions based on predefined themes. The event promotes creativity, innovation, and teamwork with 5 compelling themes: AI for Social Good, Sustainability and Green Innovation, Smart Education Systems, Digital Transformation and Automation, and HealthTech and Wellbeing.",
     image: ideathonImage,
+    team_size: { min: 1, max: 4 },
+    prizes: [
+      { position: "1st Prize", amount: 2000 },
+      { position: "2nd Prize", amount: 1500 }
+    ],
+    template_url: "/templates/IEEE_Sasi_Ideathon_Template.pptx",
     coordinators: [
       { name: "Coordinator Name", phone: "+91XXXXXXXXXX" }
     ],
@@ -459,6 +477,7 @@ export const eventsData: Record<string, Event> = {
     short_desc: "Turn ideas into interactive web designs using Figma, HTML, CSS, JavaScript, and Bootstrap.",
     long_desc: "WEBCRAFT is a web development competition designed to enhance students' creativity and front-end development skills through modern web design and development challenges. Participants will design and build responsive, interactive websites using Figma, HTML, CSS, JavaScript, and Bootstrap. Teams will receive themes at the event start and must create functional, visually appealing websites within the time limit.",
     image: webcraftImage,
+    team_size: { min: 1, max: 2 },
     coordinators: [
       { name: "N. Jahnavi", phone: "+91XXXXXXXXXX" },
       { name: "B. Tejasree", phone: "+91XXXXXXXXXX" }

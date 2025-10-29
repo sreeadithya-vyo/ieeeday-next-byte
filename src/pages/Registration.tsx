@@ -9,9 +9,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Stepper } from '@/components/ui/stepper';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, CheckCircle2 } from 'lucide-react';
+import { Upload, CheckCircle2, Download, Users } from 'lucide-react';
 import phonePeQR from '@/assets/phonepe-qr.png';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { getAllEvents, Event } from '@/data/events';
 export default function Registration() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -34,7 +35,8 @@ export default function Registration() {
     transactionId: '',
     consent: false,
     isIeeeMember: false,
-    ieeeMemberId: ''
+    ieeeMemberId: '',
+    teamMembers: {} as Record<string, Array<{ name: string; email: string; phone: string }>>
   });
   const steps = ['Registration Details', 'Payment', 'Confirmation'];
   useEffect(() => {
@@ -235,6 +237,10 @@ export default function Registration() {
         const eventAmount = isSPSEvent ? spsPerEventPrice : (Number(event?.registration_amount) || 200);
         const finalAmount = isSPSEvent ? eventAmount : (formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount);
         
+        // Get event details from events data
+        const eventDetails = getAllEvents().find(e => e.id === eventId);
+        const teamMembers = formData.teamMembers[eventId] || [];
+        
         return {
           participant_name: formData.name,
           participant_email: formData.email,
@@ -247,7 +253,10 @@ export default function Registration() {
           payment_status: 'pending',
           status: 'submitted',
           is_ieee_member: formData.isIeeeMember,
-          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null
+          ieee_member_id: formData.isIeeeMember ? formData.ieeeMemberId : null,
+          team_size: eventDetails?.team_size?.max || null,
+          team_members: teamMembers.length > 0 ? teamMembers : null,
+          team_leader_name: teamMembers.length > 0 ? formData.name : null
         };
       });
       const {
@@ -272,6 +281,32 @@ export default function Registration() {
   const preSelectedEvent = searchParams.get('event') ? selectedEventData[0] : null;
   const handleEventToggle = (eventId: string) => {
     setSelectedEvents(prev => prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]);
+  };
+
+  // Handle team member changes
+  const handleTeamMemberChange = (eventId: string, memberIndex: number, field: string, value: string) => {
+    setFormData(prev => {
+      const teamMembers = { ...prev.teamMembers };
+      if (!teamMembers[eventId]) {
+        teamMembers[eventId] = [];
+      }
+      if (!teamMembers[eventId][memberIndex]) {
+        teamMembers[eventId][memberIndex] = { name: '', email: '', phone: '' };
+      }
+      teamMembers[eventId][memberIndex] = {
+        ...teamMembers[eventId][memberIndex],
+        [field]: value
+      };
+      return { ...prev, teamMembers };
+    });
+  };
+
+  // Get team events from selected events
+  const getTeamEvents = () => {
+    const eventsData = getAllEvents();
+    return selectedEvents
+      .map(eventId => eventsData.find(e => e.id === eventId))
+      .filter(event => event && event.team_size);
   };
 
   // SPS Combo pricing calculation
@@ -422,6 +457,94 @@ export default function Registration() {
                         </p>
                       </div>}
                   </div>
+
+                  {/* Team Members Section */}
+                  {getTeamEvents().length > 0 && (
+                    <div className="col-span-full border-t pt-4 space-y-6">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-primary" />
+                        <h3 className="font-semibold">Team Member Details</h3>
+                      </div>
+                      
+                      {getTeamEvents().map(event => {
+                        if (!event) return null;
+                        const maxTeamSize = event.team_size!.max;
+                        const currentMembers = formData.teamMembers[event.id] || [];
+                        
+                        return (
+                          <div key={event.id} className="space-y-3 p-4 bg-muted/50 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium">{event.title}</h4>
+                                <p className="text-xs text-muted-foreground">
+                                  Team Size: {event.team_size!.min}-{event.team_size!.max} members
+                                  {event.prizes && (
+                                    <span className="ml-2 text-primary font-medium">
+                                      • Prizes: {event.prizes.map(p => `${p.position}: ₹${p.amount}`).join(', ')}
+                                    </span>
+                                  )}
+                                </p>
+                                {event.template_url && (
+                                  <a 
+                                    href={event.template_url} 
+                                    download
+                                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                                  >
+                                    <Download className="h-3 w-3" />
+                                    Download Template
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground bg-background/50 p-2 rounded">
+                              You are the team leader. Add {event.team_size!.min === 1 ? 'up to' : 'additional'} {maxTeamSize - 1} team member(s) below.
+                            </div>
+
+                            {Array.from({ length: maxTeamSize - 1 }).map((_, idx) => (
+                              <div key={idx} className="space-y-2 p-3 bg-background rounded border">
+                                <p className="text-sm font-medium">Team Member {idx + 1}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                  <div>
+                                    <Label htmlFor={`team-${event.id}-${idx}-name`} className="text-xs">Name</Label>
+                                    <Input 
+                                      id={`team-${event.id}-${idx}-name`}
+                                      value={currentMembers[idx]?.name || ''}
+                                      onChange={(e) => handleTeamMemberChange(event.id, idx, 'name', e.target.value)}
+                                      placeholder="Enter name"
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor={`team-${event.id}-${idx}-email`} className="text-xs">Email</Label>
+                                    <Input 
+                                      id={`team-${event.id}-${idx}-email`}
+                                      type="email"
+                                      value={currentMembers[idx]?.email || ''}
+                                      onChange={(e) => handleTeamMemberChange(event.id, idx, 'email', e.target.value)}
+                                      placeholder="Enter email"
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor={`team-${event.id}-${idx}-phone`} className="text-xs">Phone</Label>
+                                    <Input 
+                                      id={`team-${event.id}-${idx}-phone`}
+                                      type="tel"
+                                      value={currentMembers[idx]?.phone || ''}
+                                      onChange={(e) => handleTeamMemberChange(event.id, idx, 'phone', e.target.value)}
+                                      placeholder="Enter phone"
+                                      className="h-9"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4 border-t pt-4">

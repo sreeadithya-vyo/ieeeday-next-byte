@@ -294,6 +294,9 @@ export type Database = {
           payment_status: string | null
           rejection_note: string | null
           status: string
+          team_leader_name: string | null
+          team_members: Json | null
+          team_size: number | null
           transaction_id: string | null
           updated_at: string | null
           user_id: string | null
@@ -316,6 +319,9 @@ export type Database = {
           payment_status?: string | null
           rejection_note?: string | null
           status?: string
+          team_leader_name?: string | null
+          team_members?: Json | null
+          team_size?: number | null
           transaction_id?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -338,6 +344,9 @@ export type Database = {
           payment_status?: string | null
           rejection_note?: string | null
           status?: string
+          team_leader_name?: string | null
+          team_members?: Json | null
+          team_size?: number | null
           transaction_id?: string | null
           updated_at?: string | null
           user_id?: string | null
