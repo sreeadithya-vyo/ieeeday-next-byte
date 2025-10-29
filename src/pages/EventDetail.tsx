@@ -30,6 +30,7 @@ interface EventDetail {
   schedule: any;
   chapter: { name: string; code: string } | null;
   prizes?: Array<{ position: string; amount: number }> | null;
+  template_url?: string | null;
 }
 
 const EventDetail = () => {
@@ -349,6 +350,13 @@ const EventDetail = () => {
                     Register for Event
                   </Button>
                 </Link>
+                {event.template_url && (
+                  <a href={event.template_url} download className="block">
+                    <Button variant="outline" className="w-full" size="lg">
+                      Sample Template
+                    </Button>
+                  </a>
+                )}
                 <Separator />
                 <div className="text-sm text-muted-foreground">
                   <p>
