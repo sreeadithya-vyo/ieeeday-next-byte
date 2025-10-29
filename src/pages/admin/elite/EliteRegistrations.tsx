@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Eye, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Eye, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -111,6 +112,23 @@ export default function EliteRegistrations() {
       fetchRegistrations();
     } catch (error: any) {
       toast.error('Failed to reject registration');
+      console.error(error);
+    }
+  };
+
+  const handleDelete = async (registrationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .delete()
+        .eq('id', registrationId);
+
+      if (error) throw error;
+      
+      toast.success('Registration deleted successfully');
+      fetchRegistrations();
+    } catch (error: any) {
+      toast.error('Failed to delete registration');
       console.error(error);
     }
   };
@@ -272,48 +290,79 @@ export default function EliteRegistrations() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {reg.status === 'submitted' && (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleApprove(reg.id)}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => setSelectedRegistration(reg.id)}
-                                  >
-                                    <XCircle className="h-4 w-4 mr-1" />
-                                    Reject
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Reject Registration</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <Textarea
-                                      placeholder="Enter rejection reason..."
-                                      value={rejectionNote}
-                                      onChange={(e) => setRejectionNote(e.target.value)}
-                                    />
+                          <div className="flex gap-2">
+                            {reg.status === 'submitted' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => handleApprove(reg.id)}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
                                     <Button
-                                      onClick={() => selectedRegistration && handleReject(selectedRegistration)}
+                                      size="sm"
                                       variant="destructive"
+                                      onClick={() => setSelectedRegistration(reg.id)}
                                     >
-                                      Confirm Rejection
+                                      <XCircle className="h-4 w-4 mr-1" />
+                                      Reject
                                     </Button>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                            </div>
-                          )}
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Reject Registration</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <Textarea
+                                        placeholder="Enter rejection reason..."
+                                        value={rejectionNote}
+                                        onChange={(e) => setRejectionNote(e.target.value)}
+                                      />
+                                      <Button
+                                        onClick={() => selectedRegistration && handleReject(selectedRegistration)}
+                                        variant="destructive"
+                                      >
+                                        Confirm Rejection
+                                      </Button>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </>
+                            )}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Registration</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this registration? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(reg.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
