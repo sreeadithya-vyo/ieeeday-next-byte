@@ -221,22 +221,27 @@ export default function Registration() {
         return;
       }
 
-      // Calculate final amounts with SPS combo pricing
+  // Calculate final amounts with SPS and APS combo pricing
       const selectedEventsData = availableEvents.filter(e => selectedEvents.includes(e.id));
       const spsEventsInSelection = selectedEventsData.filter(e => e.chapters?.code === 'SPS');
-      const otherEventsInSelection = selectedEventsData.filter(e => e.chapters?.code !== 'SPS');
+      const apsEventsInSelection = selectedEventsData.filter(e => e.chapters?.code === 'APS');
+      const otherEventsInSelection = selectedEventsData.filter(e => e.chapters?.code !== 'SPS' && e.chapters?.code !== 'APS');
       
       const spsCombo = spsEventsInSelection.length > 0 ? calculateSPSComboPrice(spsEventsInSelection.length) : 0;
       const spsPerEventPrice = spsEventsInSelection.length > 0 ? spsCombo / spsEventsInSelection.length : 0;
+      
+      const apsCombo = apsEventsInSelection.length > 0 ? calculateAPSComboPrice(apsEventsInSelection.length) : 0;
+      const apsPerEventPrice = apsEventsInSelection.length > 0 ? apsCombo / apsEventsInSelection.length : 0;
       
       // Create registrations for all selected events
       const registrations = selectedEvents.map(eventId => {
         const event = availableEvents.find(e => e.id === eventId);
         const isSPSEvent = event?.chapters?.code === 'SPS';
+        const isAPSEvent = event?.chapters?.code === 'APS';
         
-        // Use combo price for SPS events (no IEEE discount), regular price with IEEE discount for others
-        const eventAmount = isSPSEvent ? spsPerEventPrice : (Number(event?.registration_amount) || 200);
-        const finalAmount = isSPSEvent ? eventAmount : (formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount);
+        // Use combo price for SPS/APS events (no IEEE discount), regular price with IEEE discount for others
+        const eventAmount = isSPSEvent ? spsPerEventPrice : isAPSEvent ? apsPerEventPrice : (Number(event?.registration_amount) || 200);
+        const finalAmount = (isSPSEvent || isAPSEvent) ? eventAmount : (formData.isIeeeMember ? Math.max(eventAmount - IEEE_DISCOUNT_PER_EVENT, 0) : eventAmount);
         
         // Get event details from events data
         const eventDetails = getAllEvents().find(e => e.id === eventId);
@@ -344,15 +349,27 @@ export default function Registration() {
     return spsEventCount * 150; // Fallback to per-event pricing
   };
 
-  // Calculate total with SPS combo pricing and IEEE discount (only for non-SPS events)
+  // APS Combo pricing calculation
+  const calculateAPSComboPrice = (apsEventCount: number): number => {
+    if (apsEventCount === 1) return 200;
+    if (apsEventCount === 2) return 250;
+    if (apsEventCount === 3) return 350;
+    return apsEventCount * 200; // Fallback to per-event pricing
+  };
+
+  // Calculate total with SPS and APS combo pricing and IEEE discount (only for non-SPS/APS events)
   const IEEE_DISCOUNT_PER_EVENT = 50;
   
-  // Separate SPS events from other events
+  // Separate SPS, APS, and other events
   const spsEvents = selectedEventData.filter(e => e.chapters?.code === 'SPS');
-  const otherEvents = selectedEventData.filter(e => e.chapters?.code !== 'SPS');
+  const apsEvents = selectedEventData.filter(e => e.chapters?.code === 'APS');
+  const otherEvents = selectedEventData.filter(e => e.chapters?.code !== 'SPS' && e.chapters?.code !== 'APS');
   
   // Calculate SPS combo price (no IEEE discount for SPS)
   const spsComboPrice = spsEvents.length > 0 ? calculateSPSComboPrice(spsEvents.length) : 0;
+  
+  // Calculate APS combo price (no IEEE discount for APS)
+  const apsComboPrice = apsEvents.length > 0 ? calculateAPSComboPrice(apsEvents.length) : 0;
   
   // Calculate other events price with IEEE discount
   const otherEventsPrice = otherEvents.reduce((sum, event) => {
@@ -362,15 +379,16 @@ export default function Registration() {
   }, 0);
   
   // Total amount
-  const totalAmount = spsComboPrice + otherEventsPrice;
+  const totalAmount = spsComboPrice + apsComboPrice + otherEventsPrice;
   
   // Calculate original amount (without combo or discounts)
   const originalAmount = selectedEventData.reduce((sum, event) => sum + (Number(event.registration_amount) || 200), 0);
   
-  // Calculate total discount (combo savings + IEEE discount for non-SPS events only)
-  const comboSavings = spsEvents.length > 0 ? (spsEvents.reduce((sum, e) => sum + (Number(e.registration_amount) || 150), 0) - spsComboPrice) : 0;
+  // Calculate total discount (combo savings + IEEE discount for non-SPS/APS events only)
+  const spsComboSavings = spsEvents.length > 0 ? (spsEvents.reduce((sum, e) => sum + (Number(e.registration_amount) || 150), 0) - spsComboPrice) : 0;
+  const apsComboSavings = apsEvents.length > 0 ? (apsEvents.reduce((sum, e) => sum + (Number(e.registration_amount) || 200), 0) - apsComboPrice) : 0;
   const ieeeDiscount = formData.isIeeeMember ? otherEvents.length * IEEE_DISCOUNT_PER_EVENT : 0;
-  const totalDiscount = comboSavings + ieeeDiscount;
+  const totalDiscount = spsComboSavings + apsComboSavings + ieeeDiscount;
   return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-6">
       <Card className="w-full max-w-3xl">
         <CardHeader>
@@ -465,15 +483,18 @@ export default function Registration() {
                         <p className="text-sm font-medium">
                           {selectedEvents.length} event(s) selected
                         </p>
-                        {(comboSavings > 0 || (formData.isIeeeMember && ieeeDiscount > 0)) && <>
+                        {((spsComboSavings + apsComboSavings) > 0 || (formData.isIeeeMember && ieeeDiscount > 0)) && <>
                             <p className="text-xs text-muted-foreground">
                               Original Amount: ₹{originalAmount}
                             </p>
-                            {comboSavings > 0 && <p className="text-xs text-blue-600 font-medium">
-                              SPS Combo Savings: -₹{comboSavings.toFixed(0)}
+                            {spsComboSavings > 0 && <p className="text-xs text-blue-600 font-medium">
+                              SPS Combo Savings: -₹{spsComboSavings.toFixed(0)}
+                            </p>}
+                            {apsComboSavings > 0 && <p className="text-xs text-purple-600 font-medium">
+                              APS Combo Savings: -₹{apsComboSavings.toFixed(0)}
                             </p>}
                             {formData.isIeeeMember && ieeeDiscount > 0 && <p className="text-xs text-green-600 font-medium">
-                              IEEE Discount (non-SPS events): -₹{ieeeDiscount}
+                              IEEE Discount (non-SPS/APS events): -₹{ieeeDiscount}
                             </p>}
                             <p className="text-xs font-medium text-green-600">
                               Total Savings: -₹{totalDiscount.toFixed(0)}
@@ -638,17 +659,21 @@ export default function Registration() {
                       <span>Events Selected:</span>
                       <span className="font-medium">{selectedEvents.length}</span>
                     </div>
-                    {(comboSavings > 0 || (formData.isIeeeMember && ieeeDiscount > 0)) && <>
+                    {((spsComboSavings + apsComboSavings) > 0 || (formData.isIeeeMember && ieeeDiscount > 0)) && <>
                         <div className="flex justify-between text-muted-foreground">
                           <span>Original Amount:</span>
                           <span>₹{originalAmount}</span>
                         </div>
-                        {comboSavings > 0 && <div className="flex justify-between text-blue-600">
+                        {spsComboSavings > 0 && <div className="flex justify-between text-blue-600">
                           <span>SPS Combo Savings:</span>
-                          <span>-₹{comboSavings.toFixed(0)}</span>
+                          <span>-₹{spsComboSavings.toFixed(0)}</span>
+                        </div>}
+                        {apsComboSavings > 0 && <div className="flex justify-between text-purple-600">
+                          <span>APS Combo Savings:</span>
+                          <span>-₹{apsComboSavings.toFixed(0)}</span>
                         </div>}
                         {formData.isIeeeMember && ieeeDiscount > 0 && <div className="flex justify-between text-green-600">
-                          <span>IEEE Discount (non-SPS):</span>
+                          <span>IEEE Discount (non-SPS/APS):</span>
                           <span>-₹{ieeeDiscount}</span>
                         </div>}
                         {totalDiscount > 0 && <div className="flex justify-between text-green-600 font-medium">
