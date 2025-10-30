@@ -183,8 +183,8 @@ export const eventsData: Record<string, Event> = {
     organizer: "IEEE Student Branch",
     date: "1 November 2025",
     day: 2,
-    start_time: "13:00",
-    end_time: "16:00",
+    start_time: "09:30",
+    end_time: "13:00",
     venue: "Seminar Hall",
     short_desc: "Showcase your ideas in front of expert judges on emerging technologies.",
     long_desc: "A platform for students to present innovative ideas and research in emerging technologies. Teams will compete before a panel of industry experts and academia, demonstrating their technical depth, presentation skills, and ability to handle critical questions.",
@@ -194,9 +194,9 @@ export const eventsData: Record<string, Event> = {
       { name: "K. Arjun", phone: "+91XXXXXXXXXX" }
     ],
     schedule: [
-      { time: "13:00 PM – 15:00 PM", activity: "Team Presentations (7 min + 3 min Q&A each)" },
-      { time: "15:00 PM – 15:30 PM", activity: "Jury Deliberation" },
-      { time: "15:30 PM – 16:00 PM", activity: "Results Announcement & Prize Distribution" }
+      { time: "09:30 AM – 11:30 AM", activity: "Team Presentations (7 min + 3 min Q&A each)" },
+      { time: "11:30 AM – 12:00 PM", activity: "Jury Deliberation" },
+      { time: "12:00 PM – 01:00 PM", activity: "Results Announcement & Prize Distribution" }
     ],
     program_outcomes: [
       "Improved presentation and public speaking skills",
