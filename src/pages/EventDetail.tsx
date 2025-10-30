@@ -155,9 +155,21 @@ const EventDetail = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Time</p>
                   <p className="font-semibold">
-                    {event.start_time && event.start_time.substring(0, 5)}
+                    {event.start_time && (() => {
+                      const [hours, minutes] = event.start_time.split(':');
+                      const hour = parseInt(hours);
+                      const ampm = hour >= 12 ? 'PM' : 'AM';
+                      const displayHour = hour % 12 || 12;
+                      return `${displayHour}:${minutes} ${ampm}`;
+                    })()}
                     {event.start_time && event.end_time && ' - '}
-                    {event.end_time && event.end_time.substring(0, 5)}
+                    {event.end_time && (() => {
+                      const [hours, minutes] = event.end_time.split(':');
+                      const hour = parseInt(hours);
+                      const ampm = hour >= 12 ? 'PM' : 'AM';
+                      const displayHour = hour % 12 || 12;
+                      return `${displayHour}:${minutes} ${ampm}`;
+                    })()}
                   </p>
                 </div>
               </CardContent>
