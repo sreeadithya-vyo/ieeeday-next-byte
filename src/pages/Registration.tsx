@@ -465,19 +465,36 @@ export default function Registration() {
                   <div className="col-span-full">
                     <Label>Select Events * (You can select multiple events)</Label>
                     <div className="mt-2 border rounded-lg p-4 max-h-64 overflow-y-auto space-y-3">
-                      {availableEvents.map(event => <div key={event.id} className="flex items-start space-x-3 p-3 rounded-md hover:bg-muted/50 transition-colors">
-                          <Checkbox id={`event-${event.id}`} checked={selectedEvents.includes(event.id)} onCheckedChange={() => handleEventToggle(event.id)} />
-                          <label htmlFor={`event-${event.id}`} className="flex-1 cursor-pointer text-sm">
-                            <div className="font-medium">Day {event.day} - {event.title}</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {event.date} • {event.start_time || 'TBA'} - {event.end_time || 'TBA'}
-                              {event.venue && ` • ${event.venue}`}
-                            </div>
-                            <div className="text-xs font-medium text-primary mt-1">
-                              ₹{event.registration_amount || 200}
-                            </div>
-                          </label>
-                        </div>)}
+                      {availableEvents.map(event => {
+                        const isRegistrationClosed = event.registration_open === false;
+                        return (
+                          <div key={event.id} className={`flex items-start space-x-3 p-3 rounded-md transition-colors ${isRegistrationClosed ? 'opacity-50 bg-muted/30' : 'hover:bg-muted/50'}`}>
+                            <Checkbox 
+                              id={`event-${event.id}`} 
+                              checked={selectedEvents.includes(event.id)} 
+                              onCheckedChange={() => handleEventToggle(event.id)}
+                              disabled={isRegistrationClosed}
+                            />
+                            <label htmlFor={`event-${event.id}`} className={`flex-1 text-sm ${isRegistrationClosed ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">Day {event.day} - {event.title}</span>
+                                {isRegistrationClosed && (
+                                  <span className="px-2 py-0.5 text-xs font-medium bg-destructive/20 text-destructive rounded">
+                                    Registrations Closed
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {event.date} • {event.start_time || 'TBA'} - {event.end_time || 'TBA'}
+                                {event.venue && ` • ${event.venue}`}
+                              </div>
+                              <div className="text-xs font-medium text-primary mt-1">
+                                ₹{event.registration_amount || 200}
+                              </div>
+                            </label>
+                          </div>
+                        );
+                      })}
                     </div>
                     {selectedEvents.length > 0 && <div className="mt-3 p-3 bg-primary/10 rounded-lg space-y-1">
                         <p className="text-sm font-medium">
