@@ -42,11 +42,23 @@ export default function Registration() {
   const steps = ['Registration Details', 'Payment', 'Confirmation'];
   useEffect(() => {
     fetchEvents();
+  }, []);
+
+  useEffect(() => {
     const eventId = searchParams.get('event');
-    if (eventId) {
-      setSelectedEvents([eventId]);
+    if (eventId && availableEvents.length > 0) {
+      const selectedEvent = availableEvents.find(e => e.id === eventId);
+      if (selectedEvent?.registration_open === false) {
+        setErrorDialog({
+          open: true,
+          title: 'Registrations Closed',
+          message: 'Sorry, registrations for this event are currently closed.'
+        });
+      } else {
+        setSelectedEvents([eventId]);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, availableEvents]);
   const fetchEvents = async () => {
     const {
       data,
@@ -72,6 +84,21 @@ export default function Registration() {
   };
   const handleNext = async () => {
     if (currentStep === 0) {
+      // Check if any selected events have closed registrations
+      const closedEvents = selectedEvents.filter(eventId => {
+        const event = availableEvents.find(e => e.id === eventId);
+        return event?.registration_open === false;
+      });
+
+      if (closedEvents.length > 0) {
+        setErrorDialog({
+          open: true,
+          title: 'Registrations Closed',
+          message: 'One or more selected events have closed registrations. Please remove them to continue.'
+        });
+        return;
+      }
+
       // Validate step 1
       if (!formData.name || !formData.email || !formData.phone || !formData.branch || !formData.year || selectedEvents.length === 0) {
         setErrorDialog({
@@ -286,6 +313,15 @@ export default function Registration() {
   const selectedEventData = availableEvents.filter(e => selectedEvents.includes(e.id));
   const preSelectedEvent = searchParams.get('event') ? selectedEventData[0] : null;
   const handleEventToggle = (eventId: string) => {
+    const event = availableEvents.find(e => e.id === eventId);
+    if (event?.registration_open === false) {
+      setErrorDialog({
+        open: true,
+        title: 'Registrations Closed',
+        message: 'Registrations for this event are currently closed.'
+      });
+      return;
+    }
     setSelectedEvents(prev => prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]);
   };
 

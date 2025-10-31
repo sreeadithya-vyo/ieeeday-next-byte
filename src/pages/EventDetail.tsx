@@ -31,6 +31,7 @@ interface EventDetail {
   chapter: { name: string; code: string } | null;
   prizes?: Array<{ position: string; amount: number }> | null;
   template_url?: string | null;
+  registration_open?: boolean;
 }
 
 const EventDetail = () => {
@@ -353,15 +354,23 @@ const EventDetail = () => {
               <CardHeader>
                 <CardTitle>Register Now</CardTitle>
                 <CardDescription>
-                  Secure your spot for this event
+                  {event.registration_open === false 
+                    ? 'Registrations are currently closed' 
+                    : 'Secure your spot for this event'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Link to={`/register?event=${event.id}`} className="block">
-                  <Button className="w-full" size="lg">
-                    Register for Event
+                {event.registration_open === false ? (
+                  <Button className="w-full" size="lg" disabled>
+                    Registrations Closed
                   </Button>
-                </Link>
+                ) : (
+                  <Link to={`/register?event=${event.id}`} className="block">
+                    <Button className="w-full" size="lg">
+                      Register for Event
+                    </Button>
+                  </Link>
+                )}
                 {event.template_url && (
                   <a href={event.template_url} download className="block">
                     <Button variant="outline" className="w-full" size="lg">
