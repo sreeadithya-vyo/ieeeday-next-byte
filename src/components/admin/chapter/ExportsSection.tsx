@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Chapter } from '@/hooks/useRole';
+import { exportPaymentProofsToPDF } from '@/lib/exportPaymentProofs';
 
 interface ExportsSectionProps {
   chapter: Chapter;
@@ -16,70 +17,101 @@ export default function ExportsSection({ chapter }: ExportsSectionProps) {
   const exportData = async (type: 'all' | 'pending' | 'verified') => {
     setLoading(type);
 
-    // First get the chapter_id
-    const { data: chapterData } = await supabase
-      .from('chapters')
-      .select('id')
-      .eq('code', chapter)
-      .single();
-    
-    if (!chapterData) {
-      toast.error('Chapter not found');
+    try {
+      // First get the chapter_id
+      const { data: chapterData } = await supabase
+        .from('chapters')
+        .select('id')
+        .eq('code', chapter)
+        .single();
+      
+      if (!chapterData) {
+        toast.error('Chapter not found');
+        setLoading(null);
+        return;
+      }
+
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, title, registration_amount')
+        .eq('chapter_id', chapterData.id);
+
+      const eventIds = events?.map(e => e.id) || [];
+
+      let query = supabase
+        .from('registrations')
+        .select('*, events(title, chapters(code), registration_amount)')
+        .in('event_id', eventIds);
+
+      if (type === 'pending') {
+        query = query.eq('payment_status', 'pending');
+      } else if (type === 'verified') {
+        query = query.eq('payment_status', 'verified');
+      }
+
+      const { data: registrations, error } = await query.order('created_at', { ascending: false });
+
+      if (error || !registrations) {
+        toast.error('Failed to export data');
+        setLoading(null);
+        return;
+      }
+
+      // Export CSV
+      const csv = [
+        ['Name', 'Email', 'Phone', 'Branch', 'Year', 'Event', 'Payment Status', 'Date'],
+        ...registrations.map((r: any) => [
+          r.participant_name,
+          r.participant_email,
+          r.participant_phone || '',
+          r.participant_branch || '',
+          r.participant_year || '',
+          r.events?.title || 'N/A',
+          r.payment_status || 'pending',
+          new Date(r.created_at).toLocaleDateString(),
+        ]),
+      ]
+        .map(row => row.join(','))
+        .join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${chapter}-${type}-participants-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+
+      toast.success(`${registrations.length} records exported to CSV`);
+
+      // Export payment proofs PDF
+      const proofsToExport = registrations
+        .filter((r: any) => r.payment_proof_url)
+        .map((r: any) => ({
+          participant_name: r.participant_name,
+          participant_email: r.participant_email,
+          event_title: r.events?.title || 'N/A',
+          amount: r.is_ieee_member 
+            ? Math.max(Number(r.events?.registration_amount || 200) - 50, 0) 
+            : Number(r.events?.registration_amount || 200),
+          transaction_id: r.transaction_id || 'N/A',
+          proof_url: r.payment_proof_url,
+          created_at: r.created_at,
+        }));
+
+      if (proofsToExport.length > 0) {
+        toast.info('Generating payment proofs PDF...');
+        await exportPaymentProofsToPDF(
+          proofsToExport,
+          `${chapter}-${type}-payment-proofs-${new Date().toISOString().split('T')[0]}.pdf`
+        );
+        toast.success(`Exported ${proofsToExport.length} payment proofs to PDF`);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to complete export');
+    } finally {
       setLoading(null);
-      return;
     }
-
-    const { data: events } = await supabase
-      .from('events')
-      .select('id')
-      .eq('chapter_id', chapterData.id);
-
-    const eventIds = events?.map(e => e.id) || [];
-
-    let query = supabase
-      .from('registrations')
-      .select('*, events(title, chapters(code))')
-      .in('event_id', eventIds);
-
-    if (type === 'pending') {
-      query = query.eq('payment_status', 'pending');
-    } else if (type === 'verified') {
-      query = query.eq('payment_status', 'verified');
-    }
-
-    const { data: registrations, error } = await query.order('created_at', { ascending: false });
-
-    if (error || !registrations) {
-      toast.error('Failed to export data');
-      setLoading(null);
-      return;
-    }
-
-    const csv = [
-      ['Name', 'Email', 'Phone', 'Branch', 'Year', 'Event', 'Payment Status', 'Date'],
-      ...registrations.map((r: any) => [
-        r.participant_name,
-        r.participant_email,
-        r.participant_phone || '',
-        r.participant_branch || '',
-        r.participant_year || '',
-        r.events?.title || 'N/A',
-        r.payment_status || 'pending',
-        new Date(r.created_at).toLocaleDateString(),
-      ]),
-    ]
-      .map(row => row.join(','))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${chapter}-${type}-participants-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-
-    toast.success(`${registrations.length} records exported successfully`);
-    setLoading(null);
   };
 
   return (

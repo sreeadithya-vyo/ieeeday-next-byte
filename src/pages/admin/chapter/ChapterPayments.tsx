@@ -4,12 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Eye, CheckCircle, XCircle, ZoomIn, ZoomOut, Download } from "lucide-react";
+import { Loader2, Eye, ZoomIn, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 import { useRole } from "@/hooks/useRole";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { exportPaymentProofsToPDF } from "@/lib/exportPaymentProofs";
 
 interface Payment {
   id: string;
@@ -192,44 +191,6 @@ export default function ChapterPayments() {
     }
   };
 
-  const handleExportPaymentProofs = async () => {
-    try {
-      setLoading(true);
-      
-      const proofsToExport = registrations
-        .filter(r => r.payment_proof_url)
-        .map(r => ({
-          participant_name: r.participant_name,
-          participant_email: r.participant_email,
-          event_title: r.events.title,
-          amount: r.is_ieee_member 
-            ? Math.max(Number(r.events.registration_amount) - 50, 0) 
-            : Number(r.events.registration_amount),
-          transaction_id: r.transaction_id || 'N/A',
-          proof_url: r.payment_proof_url!,
-          created_at: r.created_at,
-        }));
-
-      if (proofsToExport.length === 0) {
-        toast.error('No payment proofs available to export');
-        setLoading(false);
-        return;
-      }
-
-      toast.info('Generating PDF... This may take a moment');
-      await exportPaymentProofsToPDF(
-        proofsToExport,
-        `${chapter}-payment-proofs-${new Date().toISOString().split('T')[0]}.pdf`
-      );
-      toast.success(`Exported ${proofsToExport.length} payment proofs to PDF`);
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export payment proofs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       pending: "secondary",
@@ -249,18 +210,9 @@ export default function ChapterPayments() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Payment History</h2>
-          <p className="text-muted-foreground">Manage payment verifications for {chapter} events</p>
-        </div>
-        <Button 
-          onClick={handleExportPaymentProofs}
-          disabled={loading}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          {loading ? 'Exporting...' : 'Export Payment Proofs PDF'}
-        </Button>
+      <div>
+        <h2 className="text-2xl font-bold">Payment History</h2>
+        <p className="text-muted-foreground">Manage payment verifications for {chapter} events</p>
       </div>
 
       <Card>

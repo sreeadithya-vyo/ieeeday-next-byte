@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportPaymentProofsToPDF } from '@/lib/exportPaymentProofs';
 
 export default function ReportsExport() {
   const [exportType, setExportType] = useState('');
@@ -48,12 +49,15 @@ export default function ReportsExport() {
     setLoading(true);
 
     try {
+      let registrationsData: any[] = [];
+      let exportFilename = '';
+
       if (exportType === 'all_registrations') {
         let query = supabase
           .from('registrations')
           .select(`
             *,
-            events(title, chapters(code))
+            events(title, chapters(code), registration_amount)
           `);
 
         if (filterStatus) {
@@ -64,12 +68,12 @@ export default function ReportsExport() {
 
         if (error) throw error;
 
-        let filtered = data;
+        registrationsData = data;
         if (filterChapter) {
-          filtered = data.filter(reg => (reg.events as any)?.chapters?.code === filterChapter);
+          registrationsData = data.filter(reg => (reg.events as any)?.chapters?.code === filterChapter);
         }
 
-        const formatted = filtered.map(reg => ({
+        const formatted = registrationsData.map(reg => ({
           'Registration ID': reg.id,
           'Participant Name': reg.participant_name,
           'Email': reg.participant_email,
@@ -84,7 +88,8 @@ export default function ReportsExport() {
         }));
 
         exportToCSV(formatted, 'registrations');
-        toast.success('Export successful');
+        exportFilename = 'registrations';
+        toast.success('CSV export successful');
       }
 
       if (exportType === 'by_chapter') {
@@ -98,14 +103,14 @@ export default function ReportsExport() {
           .from('registrations')
           .select(`
             *,
-            events(title, chapters!inner(code))
+            events(title, chapters!inner(code), registration_amount)
           `);
 
         if (error) throw error;
 
-        const filtered = data.filter(reg => (reg.events as any)?.chapters?.code === filterChapter);
+        registrationsData = data.filter(reg => (reg.events as any)?.chapters?.code === filterChapter);
 
-        const formatted = filtered.map(reg => ({
+        const formatted = registrationsData.map(reg => ({
           'Registration ID': reg.id,
           'Participant Name': reg.participant_name,
           'Email': reg.participant_email,
@@ -115,7 +120,8 @@ export default function ReportsExport() {
         }));
 
         exportToCSV(formatted, `${filterChapter}_registrations`);
-        toast.success('Export successful');
+        exportFilename = `${filterChapter}_registrations`;
+        toast.success('CSV export successful');
       }
 
       if (exportType === 'by_event') {
@@ -123,12 +129,14 @@ export default function ReportsExport() {
           .from('registrations')
           .select(`
             *,
-            events(title, chapters(code))
+            events(title, chapters(code), registration_amount)
           `);
 
         if (error) throw error;
 
-        const formatted = data.map(reg => ({
+        registrationsData = data;
+
+        const formatted = registrationsData.map(reg => ({
           'Event': (reg.events as any)?.title || 'N/A',
           'Chapter': (reg.events as any)?.chapters?.code || 'N/A',
           'Participant': reg.participant_name,
@@ -137,7 +145,32 @@ export default function ReportsExport() {
         }));
 
         exportToCSV(formatted, 'events_registrations');
-        toast.success('Export successful');
+        exportFilename = 'events_registrations';
+        toast.success('CSV export successful');
+      }
+
+      // Export payment proofs PDF
+      const proofsToExport = registrationsData
+        .filter(reg => reg.payment_proof_url)
+        .map(reg => ({
+          participant_name: reg.participant_name,
+          participant_email: reg.participant_email,
+          event_title: (reg.events as any)?.title || 'N/A',
+          amount: reg.is_ieee_member 
+            ? Math.max(Number((reg.events as any)?.registration_amount || 200) - 50, 0) 
+            : Number((reg.events as any)?.registration_amount || 200),
+          transaction_id: reg.transaction_id || 'N/A',
+          proof_url: reg.payment_proof_url,
+          created_at: reg.created_at,
+        }));
+
+      if (proofsToExport.length > 0) {
+        toast.info('Generating payment proofs PDF...');
+        await exportPaymentProofsToPDF(
+          proofsToExport,
+          `${exportFilename}_payment-proofs_${new Date().toISOString().split('T')[0]}.pdf`
+        );
+        toast.success(`Exported ${proofsToExport.length} payment proofs to PDF`);
       }
     } catch (error) {
       console.error('Export error:', error);
