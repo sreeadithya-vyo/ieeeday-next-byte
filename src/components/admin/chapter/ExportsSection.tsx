@@ -105,6 +105,8 @@ export default function ExportsSection({ chapter }: ExportsSectionProps) {
           `${chapter}-${type}-payment-proofs-${new Date().toISOString().split('T')[0]}.pdf`
         );
         toast.success(`Exported ${proofsToExport.length} payment proofs to PDF`);
+      } else {
+        toast.info('No payment proofs found for this selection');
       }
     } catch (error) {
       console.error('Export error:', error);
